@@ -1,7 +1,15 @@
 """TOML configuration management for the Kmoe manga downloader."""
 
-import tomllib
+import sys
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib  # type: ignore[no-redef]
 
 from kmoe.exceptions import ConfigError
 from kmoe.models import AppConfig

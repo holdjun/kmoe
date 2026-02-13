@@ -15,7 +15,7 @@ kxx.moe / kzz.moe / koz.moe 漫画站点的命令行下载工具。
 
 ## 安装
 
-需要 Python 3.12+。
+需要 Python 3.10+。
 
 ```bash
 pip install kmoe

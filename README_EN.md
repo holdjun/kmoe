@@ -15,7 +15,7 @@ A command-line manga downloader for kxx.moe / kzz.moe / koz.moe.
 
 ## Installation
 
-Requires Python 3.12+.
+Requires Python 3.10+.
 
 ```bash
 pip install kmoe
