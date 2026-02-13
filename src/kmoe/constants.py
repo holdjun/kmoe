@@ -1,7 +1,6 @@
 """Constants for the Kmoe manga downloader CLI tool."""
 
 from enum import IntEnum
-from pathlib import Path
 
 # Application name
 APP_NAME = "kmoe"
@@ -65,39 +64,3 @@ DEFAULT_RATE_LIMIT_DELAY: float = 1.0  # seconds
 
 # Retry settings
 DEFAULT_MAX_RETRIES: int = 3
-
-# Default directories
-DEFAULT_DATA_DIR = Path(__file__).parent.parent.parent / "data"
-DEFAULT_CONFIG_DIR = DEFAULT_DATA_DIR / "config"
-DEFAULT_DOWNLOAD_DIR = DEFAULT_DATA_DIR / "downloads"
-DEFAULT_CACHE_DIR = DEFAULT_DATA_DIR / "cache"
-
-
-def get_data_dir() -> Path:
-    """Get the data directory, using platformdirs if available."""
-    try:
-        from platformdirs import user_data_dir
-
-        return Path(user_data_dir(APP_NAME))
-    except ImportError:
-        return DEFAULT_DATA_DIR
-
-
-def get_config_dir() -> Path:
-    """Get the config directory, using platformdirs if available."""
-    try:
-        from platformdirs import user_config_dir
-
-        return Path(user_config_dir(APP_NAME))
-    except ImportError:
-        return DEFAULT_CONFIG_DIR
-
-
-def get_cache_dir() -> Path:
-    """Get the cache directory, using platformdirs if available."""
-    try:
-        from platformdirs import user_cache_dir
-
-        return Path(user_cache_dir(APP_NAME))
-    except ImportError:
-        return DEFAULT_CACHE_DIR

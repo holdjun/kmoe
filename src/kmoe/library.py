@@ -15,7 +15,7 @@ import re
 import tarfile
 import zipfile
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import structlog
@@ -116,7 +116,7 @@ def save_index(config: AppConfig, entries: list[LibraryEntry]) -> None:
             )
         )
 
-    index = LibraryIndex(updated_at=datetime.now(UTC), comics=comics)
+    index = LibraryIndex(updated_at=datetime.now(timezone.utc), comics=comics)
     ensure_dir(config.download_dir)
     _index_path(config).write_text(index.model_dump_json(indent=2), encoding="utf-8")
 
@@ -125,7 +125,7 @@ def rebuild_index(config: AppConfig) -> LibraryIndex:
     """Scan all subdirectory library.json files and rebuild the root index."""
     entries = list_library(config)
     save_index(config, entries)
-    return load_index(config) or LibraryIndex(updated_at=datetime.now(UTC))
+    return load_index(config) or LibraryIndex(updated_at=datetime.now(timezone.utc))
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +245,7 @@ def refresh_entry_from_detail(entry: LibraryEntry, detail: ComicDetail) -> Libra
         meta=detail.meta,
         downloaded_volumes=entry.downloaded_volumes,
         total_volumes=total,
-        last_checked=datetime.now(UTC),
+        last_checked=datetime.now(timezone.utc),
         is_complete=is_complete,
     )
 
@@ -393,16 +393,12 @@ def _extract_vol_title_from_filename(filename: str) -> str | None:
     return None
 
 
+@dataclass(frozen=True, slots=True)
 class MatchResult:
     """Result of matching files to volumes."""
 
-    def __init__(
-        self,
-        matched: list[tuple[ScannedFile, Volume]],
-        unmatched: list[ScannedFile],
-    ) -> None:
-        self.matched = matched
-        self.unmatched = unmatched
+    matched: list[tuple[ScannedFile, Volume]]
+    unmatched: list[ScannedFile]
 
 
 def match_files_to_volumes(
@@ -647,7 +643,7 @@ def import_directory(
                 title=vol.title,
                 format=fmt,
                 filename=filename,
-                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=UTC),
+                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
                 size_bytes=sf.size,
             )
         )

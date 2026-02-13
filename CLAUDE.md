@@ -62,7 +62,7 @@ parser → models
 
 ## 数据模型
 
-所有 Pydantic 模型不可变（`frozen=True`）。定义在 `models.py`。
+定义在 `models.py`。带 `frozen=True` 的模型不可变（`ComicMeta`, `Volume`, `SearchResult`, `UserStatus`），其余模型可变（`ComicDetail`, `LibraryEntry`, `DownloadedVolume`, `SearchResponse`, `LibraryIndex`, `LibraryIndexEntry`）。
 
 ### ComicMeta
 漫画元数据：`book_id`, `title`, `authors`, `status`, `region`, `categories`, `score`, `cover_url`, `description`

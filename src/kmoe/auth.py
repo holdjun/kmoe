@@ -104,7 +104,7 @@ async def login(client: KmoeClient, username: str, password: str) -> UserStatus:
     }
 
     await client.post(URLTemplate.LOGIN, data=form_data)
-    cookies = dict(client._client.cookies.items())
+    cookies = client.get_cookies()
 
     home_response = await client.get(URLTemplate.HOME)
     home_html = home_response.text
@@ -126,8 +126,7 @@ async def check_session(client: KmoeClient) -> UserStatus | None:
     if cookies is None:
         return None
 
-    for name, value in cookies.items():
-        client._client.cookies.set(name, value)
+    client.set_cookies(cookies)
 
     response = await client.get(URLTemplate.HOME)
     html = response.text

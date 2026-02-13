@@ -90,8 +90,8 @@ async def search(
         url_template = URLTemplate.SEARCH
         if page > 1:
             url_template += "&page={page}"
-            response = await client.get(url_template, keyword=keyword, page=str(page))
+            response = await client.get(url_template, keyword=quote(keyword), page=str(page))
         else:
-            response = await client.get(url_template, keyword=keyword)
+            response = await client.get(url_template, keyword=quote(keyword))
 
     return parse_search_results(response.text)
