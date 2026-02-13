@@ -1,0 +1,522 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=1200,user-scalable=0">
+<meta name="theme-color" content="#505050" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#202020" media="(prefers-color-scheme: dark)">
+<title>我的設置 - kxx.moe</title>
+<link rel="apple-touch-icon" href="/favicon.ico" />
+<link rel="stylesheet" href="/zxweb.css?01" type="text/css" />
+<script>
+    function img_onerror( obj_img )
+    {
+        var img_url = "/img/icon-gray.png";
+        var img = new Image();
+        img.src = img_url;
+        if ( img.filesize > 0 || (img.width > 0 && img.height > 0) ) {
+            obj_img.src = img_url;
+        } // if
+    } // function
+</script>
+</head>
+<body>
+<div class="top_rgba_deep">
+  <div class="top_nav">
+    <div class="nav_logo">
+      <a href="https://kxx.moe/"><img id="logo-edging" src="https://webimg.mixmoe.com/mox/moe-logo-edging.png" border="0" alt="logo" /></a>
+    </div>
+    <div class="nav_banner">
+    </div>
+    <form action="https://kxx.moe/list.php" method="get" name="search2">
+    <div class="nav_search">
+      &nbsp;　　　&nbsp;
+      <input type=text name="s" maxlength="100" class="input_sml_rgba top_rgba_light" style="width:180px;"> &nbsp;
+      <button type="submit" class="bt_sml_main">搜索漫畫</button>
+    </div>
+    </form>
+    <div class="nav_user text_bgdeep text_herf_notline">
+      <a href="https://kxx.moe/my.php"><font color='#D0104C'>Lv3</font>&nbsp;設置&nbsp;&nbsp;</a>｜
+      <a href="https://kxx.moe/u/10756186/">信息主頁</a> ｜
+      <a href="https://kxx.moe/mycomic.php">上傳漫畫</a> ｜
+      <a href="https://kxx.moe/c/10001.htm">問題反饋</a> ｜
+      <a href="https://kxx.moe/donate.php">支持成為VIP</a>
+    </div>
+  </div>
+</div>
+<div class="top_rgba_light2">
+  <center>
+  <div class="nav_book top_rgba_zero text_bglight text_herf_notline">
+    &nbsp; <a href="https://kxx.moe/">首頁</a>
+    ＞ 我的設置
+  </div>
+  </center>
+</div>
+<div class="hr_10 top_rgba_white"></div>
+<div class="hr_10 top_rgba_white"></div>
+
+
+<center class="top_rgba_white">
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr width="100%" style="height:36px;padding:0px;text-align:center;">
+    <td style="width:80px;"></td>
+    <td class="tab_norm tab_check"><b>帳號信息</b></td>
+    <td style="width:5px;"></td>
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/mydevice.php');">推送設置</td>
+    <td style="width:5px;"></td>
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/myphone.php');">真實驗證</td>
+    <td style="width:5px;"></td>
+    <!-- td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/pushepub.php');">推送epub</td>
+    <td style="width:5px;"></td -->
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/myfollow.php');">訂閱收藏</td>
+    <td style="width:5px;"></td>
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/myrecord.php');">額度記錄</td>
+    <td style="width:5px;"></td>
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/mybookcomm.php');">
+      &nbsp; &nbsp; 相關書評
+      <font class='red_point' id="redpoint_bcomm_reply" style="display:none">&nbsp;&nbsp;</font>
+      <font id="space_bcomm">&nbsp;&nbsp;</font>
+    </td>
+    <td style="width:5px;"></td>
+    <td class="tab_norm tab_unchk" onclick="javascript:goto_url('https://kxx.moe/mycomic.php');">製作漫畫</td>
+    <td style="width:80px;"></td>
+  </tr>
+  <tr width="100%" class="bg_line_gary" style="padding:0px;"><td colspan="16"  class="bg_line_gary"  style="padding:0px;"></td>
+  </tr>
+</table>
+
+<!-- content -->
+<div class="hr_10"></div>
+<div>
+  <table class="book_list">
+    <form name="form_kindlegen" action="my_do.php" method="post" enctype="multipart/form-data" target="iframe_action">
+    <tr>
+      <td style="padding-top:25px;text-align:right;width:25%">
+        登錄郵箱 : &nbsp;
+      </td>
+      <td style="padding-top:25px;text-align:left;width:75%">
+        holdjohnh@gmail.com
+        &nbsp;&nbsp;
+        ( KMOE ID : 10756186 )
+        &nbsp;　　&nbsp;
+        <a href="https://kxx.moe/logout.php"><button type="button" class="bt_sml_defa">退出登錄</button></a>　　&nbsp;
+        <a href="/register.php?reset=1"><button type="button" class="bt_sml_defa">修改密碼</button></a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:10px;text-align:right;width:25%"> &nbsp; </td>
+      <td style="padding-top:10px;text-align:left;width:75%">
+        <a href="https://kxx.moe/change_mail.php"><button type="button" class="bt_sml_defa">修改郵箱</button></a>　　&nbsp;
+        <a href="https://kxx.moe/del_account.php"><button type="button" class="bt_sml_defa">刪除帳號</button></a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:25px;text-align:right"> 昵稱 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <div id="div_nickname_display">
+          holdjohnh &nbsp;&nbsp;&nbsp;&nbsp;
+          <button type="button" class="bt_sml_defa" onclick="javascript:return(disp_nick_change());">修改昵稱</button>
+        </div>
+        <div id="div_nickname_change" style="display:none;">
+          <input type="text" name="nickname" maxlength="32" class="input_sml"
+              style="width:150px;" value="holdjohnh">
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button type="button" onclick="javascript:return(form_onsubmit());"
+                  class="bt_sml_main">確認修改</button> &nbsp;&nbsp;
+          <button type="button" onclick="javascript:return(disp_nick_display());"
+                  class="bt_sml_defa_narr">取消</button>
+        </div>
+      </td>
+    </tr>
+    </form>
+    <tr>
+      <td style="padding-top:25px;text-align:right;vertical-align:top;"> 頭像 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <div id="div_usericon_display">
+          <img onerror="javascript:img_onerror(this);" id="img_icon" class="user_icon_l"
+               style="width:100px;height:100px;" src="https://kmimg.moex.ink/blank.png?sign=c2cec84f97cd489f-2066832000-kmoe-0-0" />
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button type="button" class="bt_sml_defa" onclick="javascript:return(disp_icon_change(1));">修改頭像</button>
+        </div>
+        <div id="div_usericon_change" style="display:none;">
+          <img onerror="javascript:img_onerror(this);" id="img_preview"
+               width="120px" height="120px" class="user_icon_l" src="https://kmimg.moex.ink/blank.png?sign=c2cec84f97cd489f-2066832000-kmoe-0-0" />
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button id="aaselect_file" class="bt_sml_main_wide"
+                  onclick="javascript:do_select_file(0);">選擇圖片上傳</button>
+                  &nbsp;
+          <button type="button" onclick="javascript:return(disp_icon_change(0));"
+                  class="bt_sml_defa_narr">取消</button>
+          &nbsp;&nbsp;&nbsp;
+          <font class="filesize">支持JPEG / PNG</font>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:25px;text-align:right;vertical-align:top;"> 信息主頁背景 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <div id="div_userbgimg_change">
+          <img onerror="javascript:img_onerror(this);" id="img_bgimg"  style="vertical-align:middle;"
+               width="440px" height="55px" src="https://kmimg.moex.ink/blank.png?sign=c2cec84f97cd489f-2066832000-kmoe-0-0" />　&nbsp;
+          <button id="bgselect_file" class="bt_sml_defa_wide" style="vertical-align:middle;"
+                  onclick="javascript:do_select_file(1);">上傳新背景圖片</button><br /> &nbsp;<br /> 
+          <font class="filesize">　在信息主頁頂部展示，支持JPEG / PNG，截取中間部分延展至 2000*250px 顯示</font>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:25px;text-align:right;"> 信息主頁默認分類 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <select name="uhometab" id="sel_uhometab" onchange="javascript:do_setting_set(10, 'sel_uhometab');"
+            class="input_sml" style="padding-left:10px;padding-right:10px;width:250px;" >
+          <option value="0" selected >漫畫（上傳的漫畫）</option>
+          <option value="1"  >書評（我寫的書評）</option>
+          <option value="2"  >讀過（讀過的漫畫）</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:25px;text-align:right;"> 默認顯示的操作 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <select name="pushtype" id="sel_deffile" onchange="javascript:do_setting_set(1, 'sel_deffile');"
+            class="input_sml" style="padding-left:10px;padding-right:10px;width:250px;" >
+          <option value="0"  >推送到 Kindle</option>
+          <option value="1"  >下載 .mobi格式 (Kindle)</option>
+          <option value="2" selected >下載 .epub格式 (iPad/小米)</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:25px;text-align:right;"> 瀏覽及搜索時忽略分類 : &nbsp;</td>
+      <td style="padding-top:25px;text-align:left;">
+        <select name="sel_ignorecate" id="sel_ignorecate" onchange="javascript:do_ignorecate_set()"
+            class="input_sml" style="padding-left:10px;padding-right:10px;width:250px;" >
+          <option value="====">=不忽略任何分類=</option>
+          <option value="幽默">幽默</option>
+          <option value="愛情">愛情</option>
+          <option value="競技">競技</option>
+          <option value="熱血">熱血</option>
+          <option value="格鬥">格鬥</option>
+          <option value="冒險">冒險</option>
+          <option value="恐怖">恐怖</option>
+          <option value="生存">生存</option>
+          <option value="懸疑">懸疑</option>
+          <option value="偵探">偵探</option>
+          <option value="歷史">歷史</option>
+          <option value="戰爭">戰爭</option>
+          <option value="生活">生活</option>
+          <option value="勵志">勵志</option>
+          <option value="校園">校園</option>
+          <option value="職場">職場</option>
+          <option value="美食">美食</option>
+          <option value="音樂">音樂舞蹈</option>
+          <option value="機戰">機戰</option>
+          <option value="科幻">科幻</option>
+          <option value="魔幻">魔幻</option>
+          <option value="魔法">魔法</option>
+          <option value="奇幻">奇幻</option>
+          <option value="神鬼">神鬼</option>
+          <option value="武俠">武俠</option>
+          <option value="仙俠">仙俠</option>
+          <option value="轉生">轉生</option>
+          <option value="穿越">穿越</option>
+          <option value="治癒">治癒</option>
+          <option value="萌系">萌系</option>
+          <option value="宅系">宅系</option>
+          <option value="青年">青年</option>
+          <option value="少年">少年</option>
+          <option value="少女">少女</option>
+          <option value="後宮">後宮</option>
+          <option value="百合">百合</option>
+          <option value="偽娘">偽娘</option>
+          <option value="性轉">性轉換</option>
+          <option value="耽美">耽美</option>
+          <option value="東方">東方(東方Project)</option>
+          <option value="童話">童話</option>
+          <option value="藝術">藝術(講述與藝術相關的內容)</option>
+          <option value="四格">四格</option>
+          <option value="雜誌">雜誌</option>
+          <option value="繪本">繪本(以繪畫形式來表達)</option>
+          <option value="輕改">輕小說改編</option>
+          <option value="連環畫">連環畫</option>
+        </select> <font class="filesize">　僅忽略頁數少於 2000 頁(約10卷)的短篇中篇作品</font>
+      </td>
+    </tr>
+    <tr>
+        <td style="text-align:right"> &nbsp;</td>
+        <td style="text-align:left;height:30px;padding:10px;" id="action_msg"> </td>
+    </tr>
+    <tr>
+      <td style="text-align:right">
+      </td>
+      <td style="text-align:left">
+        <div id="div_user_vip" style="display:none">
+          你是本站 Lv3 用戶，且是本站 <font color="#FF9900">VIP</font> ，
+          VIP開通日期 2022-06-25，VIP期限至 <b>2023-06-24</b>。<br />
+          <br />
+          VIP 額度 : <font style="display:none">每月 <u><font color="red">&nbsp;25&nbsp;</font></u>
+          日<u> 0 </u>時更新 , </font>每月額度為 0G (= 0.0 M) 。<br />
+          Lv3 額度 : 每月 <u><font color="red">&nbsp;10&nbsp;</font></u> 日<u> 0 </u>時更新 ,
+          每月額度為 3G (= 3072.0 M) 。<br />
+          <br />
+          今日已用 : 810.7 M , 本月已用免費額度 : 1584.5 M , 本月已經用VIP額度 : 0.0 M<br />
+          <br />
+          Lv3 每月額度 : &nbsp; 3072.0 M , 剩餘 : &nbsp; 1487.5 M ,<br />
+          VIP 每月額度 : 0.0 M , 剩餘 : 0.0 M ,
+          額外額度剩餘 : &nbsp;0.0 M <br />
+          <br />
+          <button type="button" class="bt_sml_defa" onclick="javascript:return(do_vip_quotarenew());"
+                        id="button_vip_quotarenew" style="width:300px;display:"> 扣減 60 天 VIP時間，以清零本月已用額度 </a><br />
+          <!-- 共剩餘 : {QUOTA_TOTAL} M -->
+        </div>
+        <div id="div_user_nor" style="display:none">
+          你是本站 Lv3 用戶。每月 <font color="red">10</font> 日 0 時更新額度 ,
+          每月可下載/推送總文件大小為 3G (= 3072.0 M) 。<br />
+          <br />
+          今日已用 : 810.7 M , 本月已用額度 : 1584.5 M<br />
+          <br />
+          每月免費額度 : &nbsp;3072.0 M , 剩餘 : 1487.5 M ,
+          額外額度剩餘 : &nbsp;0.0 M <br />
+          <!-- 共剩餘 : {QUOTA_TOTAL} M <br / -->
+        </div>
+        <div id="div_user_lv1" style="display:none">
+          Lv3 用戶每天額度 : 300.0 M , 今天剩餘 : 0.0 M<br />
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" > <br />
+        <font color="#FF9900"><b>捐助成為VIP</b></font> : <a href="https://kxx.moe/donate.php">每月 <b>40G</b> 下載額度，及可使用VIP下載線路。</a> <br />
+        <br />
+        <a href="/authlogin_do.php?j=1&s=113&goto=https%3A%2F%2Fcomicgoods.com%2Fshop_sku.php%3Fid%3D5"
+           target="_blank"><b>VIP 免費領取漫畫卡片，僅付郵費寄全國</b></a>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" > </td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >Lv1 : 每月 2G 額度，且每日最多使用 300M 額度，下載限速，普通線路。</td>
+    </tr>
+    <tr>
+      <td  style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >Lv2 : 每月 2G 額度，無每日限額，下載限速，普通線路。(要求: <a href="https://kxx.moe/mydevice.php">驗證Kindle郵箱</a> 或 <a href="https://kxx.moe/myphone.php">驗證手機號碼</a>) </td>
+    </tr>
+    <tr>
+      <td  style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >Lv3 : 每月 3G 額度，無每日限額，下載限速，普通線路。(要求: 達到 Lv2 後滿 90 天) </td>
+    </tr>
+    <tr>
+      <td  style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >Lv4 : 每月 5G 額度，無每日限額，下載限速，普通線路。(要求: 上傳一定數量漫畫，看站長心情開通)</td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >VIP : 每月40G 額度，無每日限額，全球優化下載線路。(若開通多月則額度在每月開通日更新)</td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" > </td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >注 1 : 訂閱連載中的漫畫，有更新時自動推送的卷(冊)，暫不計算在使用額度中，不扣減使用額度。</td>
+    </tr>
+    <tr>
+      <td style="text-align:right"> &nbsp;</td>
+      <td style="text-align:left" >注 2 : 對同一卷(冊)書*同一格式*文檔在 24 小時內重複*下載*，不會重複扣減額度。不同格式或重復推送是會扣減的。</td>
+    </tr>
+  </table>
+</div>
+</center>
+
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+
+
+<!-- content end -->
+<div class="hr_10"></div>
+<center class="bg_line_green"></center>
+<div class="hr_10"></div>
+
+<div id="page_foot">
+  <div class="pagefoot">
+    本站內容均由網友上傳，如有疑問或爭議請聯繫 mail&#64;kmoe.one
+  </div>
+  <div class="pagefoot">
+    &equiv;　2026　Kmoe ｜ <a href="https://kxx.moe">kxx.moe</a>　<a href="https://kzz.moe">kzz.moe</a>　<a href="https://koz.moe">koz.moe</a>　&equiv;
+  </div>
+</div>
+</body>
+<form name="form_icon_up" action="https://kxx.moe/setting_icon_up.php" method="post" enctype="multipart/form-data" target="iframe_action">
+  <input type="file" class="input" name="upfile" id="input_upfile"
+         onchange="javascript:display_codeinfo('m102',3);return(document.form_icon_up.submit());"
+         accept="image/jpeg,image/png" hidden>
+  <input type="hidden" name="upload_type" value="0" >
+</form>
+<iframe name="iframe_action" src="" height="0" width="0" style="display:none"></iframe>
+</html>
+<script language='javascript'>
+    var user_level = "3";
+    var is_vip     = "0";
+    var i = 0;
+
+    if ( is_vip >= 1 ) {
+        document.getElementById("div_user_vip").style.display="";
+    } else {
+        document.getElementById("div_user_nor").style.display="";
+    } //if
+    if ( user_level <= 1 && is_vip < 1 ) {
+        document.getElementById("div_user_lv1").style.display="";
+    } else {
+        document.getElementById("div_user_lv1").style.display="none";
+    } //if
+
+    function form_onsubmit()
+    {
+        if ( document.form_kindlegen.nickname.value.length < 2 ) {
+            alert( "請輸入你的新昵稱，長度大於 2 個字符" );
+            return(false);
+        } // if
+
+        document.form_kindlegen.submit();
+        return(true);
+    }
+
+
+    function disp_nick_change()
+    {
+        document.getElementById("div_nickname_change").style.display  = "";
+        document.getElementById("div_nickname_display").style.display = "none";
+        return(false);
+    }
+
+    function disp_nick_display()
+    {
+        document.getElementById("div_nickname_change").style.display  = "none";
+        document.getElementById("div_nickname_display").style.display = "";
+        document.form_kindlegen.reset();
+        return(false);
+    }
+
+    function disp_icon_change( type )
+    {
+        if ( type ) {
+            document.getElementById("div_usericon_change").style.display  = "";
+            document.getElementById("div_usericon_display").style.display = "none";
+        } else {
+            document.getElementById("div_usericon_change").style.display  = "none";
+            document.getElementById("div_usericon_display").style.display = "";
+        } // if
+        return(false);
+    }
+
+
+    var arr_codeinfo = {
+                        "m100":"do_callback",
+                        "m101":"設置成功",
+                        "m102":"圖片上傳中...",
+                        "e400":"系統錯誤",
+                        "e401":"昵稱不符合要求"
+                        };
+
+    function do_callback() {
+        window.location.replace( window.location.href );
+    } // do_callback
+
+
+    var disp_redpoint_bcomm_reply = "0";
+
+    if ( parseInt(disp_redpoint_bcomm_reply) == 1 ) {
+        document.getElementById("redpoint_bcomm_reply").style.display = "";
+        document.getElementById("space_bcomm").style.display = "none";
+    } // if
+
+    var sel = document.getElementById('sel_ignorecate');
+    for ( i=0; i<sel.options.length; i++ ) {
+        if ( sel.options[i].value == "" ) {
+            sel.options[i].selected = true;
+        } // if
+    } //for
+
+    function do_vip_quotarenew() {
+        var quota_monvip = parseFloat( "0.0" );
+        var time_vip     = parseInt( "-83352613" );
+        if ( is_vip <= 0 ) {
+            alert( "你還不是VIP, 無法執行此操作." );
+            return( false );
+        } // if
+        if ( quota_monvip > 2000 ) { // > 2G
+            alert( "你還有比較多的額度, 現在清零不劃算呀, 多使用一些再來清零吧." );
+            return( false );
+        } // if
+        if ( time_vip < (86400*75) ) { // < 75 days
+            alert( "你的VIP期限不足75天, 需要VIP期限超過 75 天才能進行此操作." );
+            return( false );
+        } // if
+        ret = confirm( "确认要花費 60 天 VIP時間, 清零本月已用額度吗?\n清零額度後下月更新額度時間不變." );
+        if ( ret ) {
+            window.location.href = 'https://kxx.moe/vip_quotarenew.php';
+        } // if
+        return( false );
+    } // if
+
+
+    function preview_icon( img_url )
+    {
+        document.getElementById("img_preview").src = img_url;
+        document.getElementById("img_icon").src    = img_url;
+        display_codeinfo( "m101", 3 );
+        disp_icon_change( 0 );
+    } // preview_icon()
+
+    function preview_bgimg( img_url )
+    {
+        document.getElementById("img_bgimg").src = img_url;
+        display_codeinfo( "m101", 3 );
+    } // preview_icon()
+
+    function do_select_file( uptype )
+    {
+        document.form_icon_up.upload_type.value = uptype;
+        document.getElementById('input_upfile').click();
+        return( false );
+    } // function do_select_file()
+
+    function do_ignorecate_set()
+    {
+        var set_value;
+        var obj_sel = document.getElementById( 'sel_ignorecate' );
+        for ( i=0; i<obj_sel.options.length; i++ ) {
+            if ( obj_sel.options[i].selected ) {
+                set_value = obj_sel.options[i].value;
+            } // if
+        } //for
+        window.location.href = '/my_ignorecate.php?t=1&v='+set_value;
+        return( false );
+    }
+
+    function do_setting_set( set_type, val_selid )
+    {
+        var set_value;
+        var obj_sel = document.getElementById( val_selid );
+        for ( i=0; i<obj_sel.options.length; i++ ) {
+            if ( obj_sel.options[i].selected ) {
+                set_value = obj_sel.options[i].value;
+            } // if
+        } //for
+        window.location.href = '/my_set.php?t=' + set_type + '&v=' + set_value;
+        return( false );
+    }
+
+    document.body.style="background-image:url('https://webimg.mixmoe.com/moe-bg/bg-251019-min.jpg?0');background-size:2000px 250px;";
+</script>
+<script src="/volcomm.js?0501" type="text/javascript" language="javascript"></script>
+

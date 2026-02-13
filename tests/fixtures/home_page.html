@@ -1,0 +1,679 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" style="overflow-y:scroll;">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="keywords" content="kindle漫画,mobi漫画,漫画下载,漫画推送,Kobo漫画,epub漫画"/>
+<meta name="description" content="高清Kindle格式漫画下载，支持推送漫画到kindle设备。">
+<meta name="viewport" content="width=1200,user-scalable=0">
+<meta name="theme-color" content="#505050" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#202020" media="(prefers-color-scheme: dark)">
+<title>Kmoe [Kindle|epub漫畫]</title>
+<link rel="apple-touch-icon" href="/favicon.ico" />
+<link rel="icon" type="image/png" href="/img/moe-logo-256.png" />
+<link rel="stylesheet" href="/zxweb.css?01" type="text/css" />
+<script language='javascript'>
+    function disp_divinfo( div_id, book_url, cover_url, border_color,
+                           disp_tag_jp, disp_tag_en, disp_tag_end, disp_tag_brk,
+                           book_score, book_name, book_author, word_status, word_update )
+    {
+        var str_html = "";
+        document.getElementById( div_id ).setAttribute( "style", "vertical-align:top;padding:0px;text-align:left;border-radius:0px;border:0px solid #C8C8CD" );
+
+        str_html = "<a href='"+ book_url +"' style='padding:0px'><div style='padding:0px;'>"
+                 + "<div style='background:url(" + cover_url + ") no-repeat center;background-size:140px 200px;"
+                 +             "padding:0px;vertical-align:middle;text-align:right;width:140px;height:200px;"
+                 +             "border:1px solid "+ border_color +";'>"
+                 + "  <div style='background:rgba(0,0,0,0.0);border:0px;padding:0px 5px 0px 5px;height:23px;'>";
+
+        if ( disp_tag_jp.length <= 0 ) {
+           str_html += "<font style='padding:0px;color:#6a4c9c;font-size:14px;line-height:23px;"
+                       +            "text-shadow:1px 1px #FFFFFF, 1px -1px #FFFFFF, -1px 1px #FFFFFF, -1px -1px #FFFFFF'>"
+                       + "<b>日語&nbsp;</b></font>";
+        } // if
+        if ( disp_tag_en.length <= 0 ) {
+           str_html += "<font style='padding:0px;color:#0089a7;font-size:14px;line-height:23px;"
+                       +            "text-shadow:1px 1px #FFFFFF, 1px -1px #FFFFFF, -1px 1px #FFFFFF, -1px -1px #FFFFFF'>"
+                       + "<b>英文&nbsp;</b></font>";
+        } // if
+        if ( disp_tag_end.length <= 0 ) {
+           str_html += "<font style='padding:0px;color:#22b14c;font-size:14px;line-height:23px;"
+                       +            "text-shadow:1px 1px #FFFFFF, 1px -1px #FFFFFF, -1px 1px #FFFFFF, -1px -1px #FFFFFF'>"
+                       + "<b>完結&nbsp;</b></font>";
+        } // if
+        if ( disp_tag_brk.length <= 0 ) {
+           str_html += "<font style='padding:0px;color:#22b14c;font-size:14px;line-height:23px;"
+                       +            "text-shadow:1px 1px #FFFFFF, 1px -1px #FFFFFF, -1px 1px #FFFFFF, -1px -1px #FFFFFF'>"
+                       + "<b>停更&nbsp;</b></font>";
+        } // if
+
+        str_html +=  "</div>" // DIV TAG
+                   + "<p style='padding:140px 5px 0px 0px;color:#FF7700;font-size:15px;"
+                   +           "text-shadow:1px 1px #FFFFFF, 1px -1px #FFFFFF, -1px 1px #FFFFFF, -1px -1px #FFFFFF'>"
+                   +   "<b>"+ book_score +"</b></p></div>"; // DIV BACKGROUP
+
+        str_html += "</div></a>" // DIV Image
+                 +  "<center style='height:3px;'></center>"
+                 +  "<div style='padding:0px 5px 0px 5px;'>"
+                 +    "<a href='"+ book_url +"' style='font-size:13px;'>"+ book_name +"</a> <br />"
+                 +    "<font class='pagefoot'>"+ book_author +"</font> <br />"
+                 +    "<font class='filesize'>"+ word_status +"　"+ word_update +"</font>"
+                 +  " </div>";
+
+        document.getElementById( div_id ).innerHTML = str_html;
+    } // function disp_divinfo()
+
+
+    function disp_divpage( div_id, str_searchtext, num_total,
+                           btn_10b, btn_10n, btn_back, btn_next,
+                           btn_a, btn_b, btn_c, btn_d, btn_e,
+                           url_10b, url_10n, url_back, url_next,
+                           url_a, url_b, url_c, url_d, url_e,
+                           pagelink_text )
+    {
+        var str_htm = "";
+
+        str_htm = "<label style='vertical-align:middle;'>&nbsp;"+ str_searchtext +"</label>";
+        document.getElementById( "div_txt_"+div_id ).innerHTML = str_htm;
+
+        str_htm = "<label style='vertical-align:middle;'>"+ num_total +" 頁　";
+
+        if ( btn_10b )
+        str_htm+= "<a href='"+ url_10b +"'><button type='button' class='bt_sml_defa' style='width:65px'>◀︎ 10</button></a>";
+        else
+        str_htm+= "<button type='button' class='bt_sml_disa' style='width:65px' disabled>◀︎ 10</button></a>";
+
+        if ( btn_back )
+        str_htm+= " <a href='"+ url_back+"'><button type='button' class='bt_sml_main' style='width:65px'>上頁</button></a>";
+        else
+        str_htm+= " <button type='button' class='bt_sml_disa' style='width:65px' disabled>上頁</button>";
+
+        str_htm+= " <a href='"+url_a+"'><button type='button' name='link_page' class='bt_sml_defa' style='width:46px'>"+btn_a+"</button></a>"
+                + " <a href='"+url_b+"'><button type='button' name='link_page' class='bt_sml_defa' style='width:46px'>"+btn_b+"</button></a>"
+                + " <a href='"+url_c+"'><button type='button' name='link_page' class='bt_sml_defa' style='width:46px'>"+btn_c+"</button></a>"
+                + " <a href='"+url_d+"'><button type='button' name='link_page' class='bt_sml_defa' style='width:46px'>"+btn_d+"</button></a>"
+                + " <a href='"+url_e+"'><button type='button' name='link_page' class='bt_sml_defa' style='width:46px'>"+btn_e+"</button></a>";
+
+        if ( btn_next )
+        str_htm+= " <a href='"+ url_next+"'><button type='button' class='bt_sml_main' style='width:65px'>下頁</button></a>";
+        else
+        str_htm+= " <button type='button' class='bt_sml_disa' style='width:65px' disabled>下頁</button>";
+
+        if ( btn_10n )
+        str_htm+= " <a href='"+ url_10n +"'><button type='button' class='bt_sml_defa' style='width:65px'>10 ▶︎</button></a>"
+        else
+        str_htm+= " <button type='button' class='bt_sml_disa' style='width:65px' disabled>10 ▶︎</button></a>";
+
+        str_htm+= "　到 <input id='"+ div_id +"' type='text' class='input_min'> 頁"
+                + " <button type='button' class='bt_sml_defa' style='width:35px;border-radius:2px;'"
+                +       "  onclick='javascript:do_page_go( \""+ pagelink_text +"\", \""+ div_id +"\" );'>Go</button>"
+                + " </label>";
+
+        document.getElementById( "div_btn_"+div_id ).innerHTML = str_htm;
+    } // function disp_divpage()
+</script>
+</head>
+<body>
+<div class="top_rgba_deep">
+  <div class="top_nav">
+    <div class="nav_logo">
+      <a href="https://kxx.moe/"><img id="logo-edging" src="https://webimg.mixmoe.com/mox/moe-logo-edging.png" border="0" alt="logo" /></a>
+    </div>
+    <div class="nav_banner">
+      <!-- div class="text_bglight text_herf_notline" style="padding-top:30px;font-size:13px;color:#3F3F3F;">
+        <a href="https://comic.im">English Version</a></div -->
+    </div>
+    <form action="https://kxx.moe/list.php" method="get" name="search2">
+    <div class="nav_search">
+      &nbsp;　　　&nbsp;
+      <input type=text name="s" maxlength="100" class="input_sml_rgba top_rgba_light" style="width:180px;"> &nbsp;
+      <button type="submit" class="bt_sml_main">搜索漫畫</button>
+    </div>
+    </form>
+    <div class="nav_user text_bgdeep text_herf_notline">
+      <a href="https://kxx.moe/my.php"><font color='#D0104C'>Lv3</font>&nbsp;設置&nbsp;&nbsp;</a>｜
+      <a href="https://kxx.moe/u/10756186/">信息主頁</a> ｜
+      <a href="https://kxx.moe/mycomic.php">上傳漫畫</a> ｜
+      <a href="https://kxx.moe/c/10001.htm">問題反饋</a> ｜
+      <a href="https://kxx.moe/donate.php">支持成為VIP</a>
+    </div>
+  </div>
+</div>
+
+<!-- content -->
+<center class="top_rgba_light2">
+<table class="book_list text_bglight text_herf_notline" style="font-weight:bold;">
+  <tr>
+    <td style="text-align:left;" colspan="5">
+      &nbsp;　　　分類：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_all">&nbsp;全部&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*幽默,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_幽默">&nbsp;幽默&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*愛情,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_愛情">&nbsp;愛情&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*競技,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_競技">&nbsp;競技&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*熱血,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_熱血">&nbsp;熱血&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*格鬥,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_格鬥">&nbsp;格鬥&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*冒險,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_冒險">&nbsp;冒險&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*恐怖,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_恐怖">&nbsp;恐怖&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*生存,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_生存">&nbsp;生存&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*懸疑,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_懸疑">&nbsp;懸疑&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*偵探,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_偵探">&nbsp;偵探&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*歷史,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_歷史">&nbsp;歷史&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*戰爭,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_戰爭">&nbsp;戰爭&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*生活,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_生活">&nbsp;生活&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*勵志,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_勵志">&nbsp;勵志&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*校園,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_校園">&nbsp;校園&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*職場,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_職場">&nbsp;職場&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*美食,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_美食">&nbsp;美食&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*音樂,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_音樂">&nbsp;音樂舞蹈&nbsp;</a>
+      <br />
+      &nbsp;　　　　　　<!-- -->
+      <a href="https://kxx.moe/l/CAT*機戰,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_機戰">&nbsp;機戰&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*科幻,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_科幻">&nbsp;科幻&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*魔幻,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_魔幻">&nbsp;魔幻&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*魔法,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_魔法">&nbsp;魔法&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*奇幻,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_奇幻">&nbsp;奇幻&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*神鬼,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_神鬼">&nbsp;神鬼&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*武俠,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_武俠">&nbsp;武俠&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*仙俠,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_仙俠">&nbsp;仙俠&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*治癒,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_治癒">&nbsp;治癒&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*萌系,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_萌系">&nbsp;萌系&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*宅系,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_宅系">&nbsp;宅系&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*青年,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_青年">&nbsp;青年&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*少年,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_少年">&nbsp;少年&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*少女,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_少女">&nbsp;少女&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*後宮,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_後宮">&nbsp;後宮&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*百合,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_百合">&nbsp;百合&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*偽娘,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_偽娘">&nbsp;偽娘&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*性轉,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_性轉">&nbsp;性轉換&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*青戀,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_青戀">&nbsp;ＴＬ&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*耽美,all,all,sortpoint,all,all,none,0,0/"
+         id="sel_type_耽美">&nbsp;耽美&nbsp;</a><a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"  title="過濾短篇耽美"
+         id="sel_igno_耽美"></a><a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,none,0,0/" title="包含所有耽美"
+         id="sel_igno_clean_耽美"></a><font class="filesize" id="info_igno" style="display:none"> 已過濾短篇</font>
+      <br />
+      &nbsp;　　　　　　<!-- -->
+      <a href="https://kxx.moe/l/CAT*轉生,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_轉生">&nbsp;轉生&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*穿越,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_穿越">&nbsp;穿越&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*童話,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_童話">&nbsp;童話&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*東方,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_東方">&nbsp;東方&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*四格,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_四格">&nbsp;四格&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*繪本,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_繪本">&nbsp;繪本&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*藝術,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_藝術">&nbsp;藝術&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*雜誌,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_雜誌">&nbsp;雜誌&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*輕改,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_輕改">&nbsp;輕小說改編&nbsp;</a>
+      <a href="https://kxx.moe/l/CAT*連環畫,all,all,sortpoint,all,all,BL,0,0/"
+         id="sel_type_連環畫">&nbsp;連環畫&nbsp;</a>
+      <br /><div style="height:15px"></div>
+      &nbsp;　　　語言：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_lang_all">&nbsp;全部&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,chn,all,BL,0,0/"
+         name='click_filter' id="sel_lang_chn">&nbsp;中文&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,cht,all,BL,0,0/"
+         name='click_filter' id="sel_lang_cht">&nbsp;繁體&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,chs,all,BL,0,0/"
+         name='click_filter' id="sel_lang_chs">&nbsp;简体&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,jpn,all,BL,0,0/"
+         name='click_filter' id="sel_lang_jpn">&nbsp;日語&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,eng,all,BL,0,0/"
+         name='click_filter' id="sel_lang_eng">&nbsp;英文&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,oth,all,BL,0,0/"
+         name='click_filter' id="sel_lang_oth">&nbsp;其他&nbsp;</a>
+      &nbsp;　　地區：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_all">&nbsp;全部&nbsp;</a>
+      <a href="https://kxx.moe/l/all,日本,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_日本">&nbsp;日本&nbsp;</a>
+      <a href="https://kxx.moe/l/all,歐美,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_歐美">&nbsp;歐美&nbsp;</a>
+      <a href="https://kxx.moe/l/all,港臺,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_港臺">&nbsp;港臺&nbsp;</a>
+      <a href="https://kxx.moe/l/all,大陸,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_大陸">&nbsp;大陸&nbsp;</a>
+      <a href="https://kxx.moe/l/all,韓國,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_region_韓國">&nbsp;韓國&nbsp;</a>
+      &nbsp;　　　　　<a href="/authlogin_do.php?j=1&s=113&goto=https%3A%2F%2Fcomicgoods.com%2Fshop_sku.php%3Fid%3D7599"
+        target="_blank"><b style='color:#000000;'>【折扣】排球少年、藍色鎖鏈 沙包饅頭掛飾</b></a>
+      <br /><div style="height:15px"></div>
+      &nbsp;　　　篇幅：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_blen_all">&nbsp;全部&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,s,BL,0,0/"
+         name='click_filter' id="sel_blen_s">&nbsp;短篇&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,m,BL,0,0/"
+         name='click_filter' id="sel_blen_m">&nbsp;中篇&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,l,BL,0,0/"
+         name='click_filter' id="sel_blen_l">&nbsp;長篇&nbsp;</a>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;　　　　　　　　狀態：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_status_all">&nbsp;全部&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,完結,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_status_完結">&nbsp;完結&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,連載,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_status_連載">&nbsp;連載&nbsp;</a>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;　　　　標籤：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,1,0/"
+         name='click_filter' id="sel_filter_color">&nbsp;彩色&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,1/"
+         name='click_filter' id="sel_filter_hd">&nbsp;高清&nbsp;</a>
+      <!-- &nbsp;　　　　　-->　　<!-- a href="/authlogin_do.php?j=1&s=113&goto=https%3A%2F%2Fcomicgoods.com" target="_blank">買漫畫周邊</a -->
+      &nbsp;　　<a href="/authlogin_do.php?j=1&s=107&goto=https%3A%2F%2Fwww.bookshop.tw" target="_blank">購買正版實體漫畫書</a>
+      <br /><div style="height:15px"></div>
+      &nbsp;　　　排序：
+      <a href="https://kxx.moe/l/all,all,all,sortpoint,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_sortpoint">&nbsp;綜合排序&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,score,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_score">&nbsp;評價排名&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,count_push,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_count_push">&nbsp;熱度排序&nbsp;</a>
+      <!-- a href="https://kxx.moe/l/all,all,all,count_mon,all,all/"
+             id="sel_order_count_mon">&nbsp;月度排名&nbsp;</a -->
+      <a href="https://kxx.moe/l/all,all,all,count_rise,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_count_rise">&nbsp;最近熱門&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,random,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_random">&nbsp;隨機列表&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,newadd,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_newadd">&nbsp;最近收錄&nbsp;</a>
+      <a href="https://kxx.moe/l/all,all,all,lastupdate,all,all,BL,0,0/"
+         name='click_filter' id="sel_order_lastupdate">&nbsp;最近更新&nbsp;</a>
+      &nbsp;　　　　　　<a href='/authlogin_do.php?j=1&s=112' target='_blank'>在線閱讀器 KOOB.ONE</a>
+      &nbsp;　　本站支持 Kindle 設備自帶瀏覽器訪問
+      <!-- a href="https://mix.moe" target="_blank">Mix.moe漫畫插畫，分享你的漫畫插畫</a -->
+      <!-- 訂閱 <a href="/comic/50001.htm">Volmoe期刊</a> 熱門漫畫定期更新推送 -->
+    </td>
+  </tr>
+</table>
+</center>
+<div class="hr_6"></div>
+<div>
+  <table class="book_list">
+    <tr style="vertical-align:top">
+      <td class='listtitle' colspan="6" id="div_txt_input_go"> </td>
+      <td class='listtitle' colspan="15" style="height:56px;text-align:right;padding-right:20px;" id="div_btn_input_go"> </td>
+    </tr>
+
+    <tr class='listbg' style="padding:0px;">
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_1'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_2'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_3'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_4'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_5'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_6'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_7'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+    </tr> 
+    <tr class='listbg' style="padding:0px;">
+      <td colspan="21" style="height:20px;text-align:right;padding:0px;"></td>
+    </tr>
+
+    <tr class='listbg' style="padding:0px;">
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_8'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_9'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_10'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_11'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_12'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_13'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_14'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+    </tr> 
+    <tr class='listbg' style="padding:0px;">
+      <td colspan="21" style="height:20px;text-align:right;padding:0px;"></td>
+    </tr>
+
+    <tr class='listbg' style="padding:0px;">
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_15'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_16'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_17'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_18'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_19'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_20'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+      <td width='140px' height="200px" style="vertical-align:top;padding:0px;" id='div_info_21'></td>
+      <td width='15px'  height="200px" style="vertical-align:top;padding:0px;">&nbsp;</td>
+    </tr> 
+    <tr class='listbg' style="padding:0px;">
+      <td colspan="21" style="height:20px;text-align:right;padding:0px;"></td>
+    </tr>
+    <tr style="vertical-align:top">
+      <td class='listtitle' colspan="6" id="div_txt_input_go_2"> </td>
+      <td class='listtitle' colspan="15" style="height:56px;text-align:right;padding-right:20px;" id="div_btn_input_go_2"> </td>
+    </tr>
+
+        <script language='javascript'>
+            disp_divpage( "input_go", "", "998",
+                           false, true, false, true,
+                           "01", "02", "03", "04", "05",
+                           "https://kxx.moe/l/--/1.htm", "https://kxx.moe/l/--/11.htm", "https://kxx.moe/l/--/0.htm", "https://kxx.moe/l/--/2.htm",
+                           "https://kxx.moe/l/--/1.htm", "https://kxx.moe/l/--/2.htm", "https://kxx.moe/l/--/3.htm", "https://kxx.moe/l/--/4.htm", "https://kxx.moe/l/--/5.htm",
+                           "--" );
+        </script>
+
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"1", "https://kxx.moe/c/aac12b.htm", "https://kmimg.moex.ink/cover/sigl/ac5/3b1/ac53b1e22cfa743216a0e7eda2f19a08.jpg!cover_l?sign=4cdd9d47c88e46af-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "", "none",
+                           "8.7", "火影忍者 (全彩版)", "岸本齊史", "卷 57", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"2", "https://kxx.moe/c/13819.htm", "https://kmimg.moex.ink/cover/sigl/6ad/bc4/6adbc4f47080203575babf0440ee1056.jpg!cover_l?sign=2a3988682cff2946-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "9.4", "我內心的糟糕念頭", "櫻井紀雄,櫻井のりお", "話 181-185", "前天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"3", "https://kxx.moe/c/18488.htm", "https://kmimg.moex.ink/cover/sigl/6f6/ec1/6f6ec1f7272fcbb03e3a01f36714dc4a.jpg!cover_l?sign=ee81a257b642c4bf-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "9.1", "SAKAMOTO DAYS 坂本日常", "鈴木祐鬥", "話 241-245", "02-01" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"4", "https://kxx.moe/c/f4b6ff.htm", "https://kmimg.moex.ink/cover/sigl/67a/149/67a1499bac3ec71e98a22b741834819c.jpg!cover_l?sign=e0022d2d2571dff3-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "7.6", "後宮王的異世界漫遊記", "灰刃ねむみ", "話 020", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"5", "https://kxx.moe/c/21605.htm", "https://kmimg.moex.ink/cover/sigl/f7a/3f6/f7a3f6d472ff9c96450b8a6b0a3c245c.jpg!cover_l?sign=7623bf12edd5b676-2066832000-kmoe-0-0", "#6A4C9C",
+                           "", "none", "", "none",
+                           "9.5", "ダンジョン飯", "九井諒子", "Vol. 14", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"6", "https://kxx.moe/c/50462.htm", "https://kmimg.moex.ink/cover/sigl/f45/a06/f45a0677e99a0089c7689c04fe86eaa8.jpg!cover_l?sign=8ef70d7b80d86660-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "9.5", "為美好的世界獻上祝福！", "渡真仁,三嶼くろね,暁なつめ", "話 131-135", "02-09" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"7", "https://kxx.moe/c/ef2825.htm", "https://kmimg.moex.ink/cover/sigl/e94/df8/e94df84772157a2e9605aea405d1a925.jpg!cover_l?sign=2de34fa3dccba84e-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "7.9", "與聖潔少女們的不可告人之事", "閃凡人", "話 071-075", "前天" );
+        </script>
+
+
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"8", "https://kxx.moe/c/0d1fcf.htm", "https://kmimg.moex.ink/cover/sigl/61e/630/61e6301103a24a0e439f081204d711bf.jpg!cover_l?sign=3fb3b3aa59ca9679-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "9.6", "城市獵人 (完全版)", "北條司", "卷 27", "02-04" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"9", "https://kxx.moe/c/19317.htm", "https://kmimg.moex.ink/cover/sigl/2ea/65c/2ea65c2695d5bd539d0ffd9c541dba59.jpg!cover_l?sign=a0af9037afe970ab-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "8.9", "和雨·和你", "二階堂幸", "話 131-135", "前天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"10", "https://kxx.moe/c/7d9c15.htm", "https://kmimg.moex.ink/cover/sigl/ca1/330/ca1330207bcd39e78db822462ff0c247.jpg!cover_l?sign=358e1ff65bd011bd-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "8.5", "聖母的審判", "亀島潤鬥,カズキ", "話 051-055", "前天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"11", "https://kxx.moe/c/2f98cb.htm", "https://kmimg.moex.ink/cover/sigl/269/39b/26939b4dbacd854fa872b2b397f62d65.jpg!cover_l?sign=7043eb6aba428061-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "", "none",
+                           "6.0", "遊戲王 (愛藏版)", "高橋和希", "卷 04", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"12", "https://kxx.moe/c/919309.htm", "https://kmimg.moex.ink/cover/sigl/ae6/f1a/ae6f1a301c9261d088eacc9727180427.jpg!cover_l?sign=f52f9ceff35604f0-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "8.9", "一勝千金", "MAAM,サンドロビッチ・ヤバ子", "話 066-070", "02-09" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"13", "https://kxx.moe/c/8a4907.htm", "https://kmimg.moex.ink/cover/sigl/828/dd5/828dd590daee711f3fb82b8641d14171.jpg!cover_l?sign=7f10c75f484e12af-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "7.1", "今泉家似乎成了辣妹的聚集地~deep~", "のり伍郎", "話 041-045", "前天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"14", "https://kxx.moe/c/2983d2.htm", "https://kmimg.moex.ink/cover/sigl/a11/efd/a11efd444e7a7e0582d00d5f98c58cef.jpg!cover_l?sign=61d4026d9dfc28cb-2066832000-kmoe-0-0", "#6A4C9C",
+                           "", "none", "none", "none",
+                           "6.4", "まんがグリム童話 2026年", "ぶんか社", "Vol. 03", "昨天" );
+        </script>
+
+
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"15", "https://kxx.moe/c/cceeea.htm", "https://kmimg.moex.ink/cover/sigl/ecd/dc3/ecddc3e226f86cfbca8c349ec5dadc60.jpg!cover_l?sign=7a9920a86b056209-2066832000-kmoe-0-0", "#6A4C9C",
+                           "", "none", "none", "none",
+                           "6.8", "別冊少年マガジン 2026年", "講談社", "Vol. 03", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"16", "https://kxx.moe/c/f15e41.htm", "https://kmimg.moex.ink/cover/sigl/076/960/07696023311cf566c4afb8b40ac2d346.jpg!cover_l?sign=66ed3be81f8d0f58-2066832000-kmoe-0-0", "#6A4C9C",
+                           "", "none", "none", "none",
+                           "6.4", "月刊ドラゴンエイジ 2026年", "富士見書房", "Vol. 03", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"17", "https://kxx.moe/c/11980.htm", "https://kmimg.moex.ink/cover/sigl/1ec/1d8/1ec1d882f5bc3f242ccec4aa3e67ae57.jpg!cover_l?sign=48674533da6b09bc-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "8.5", "從漫畫了解FGO", "リヨ", "話 401-440", "前天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"18", "https://kxx.moe/c/f36949.htm", "https://kmimg.moex.ink/cover/sigl/364/278/364278db316e69e1d5b35f7ce3fa7766.webp!cover_l?sign=08ea8ac41cfbc7fa-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "7.5", "奴隸圖鑒", "伊藤ヒロアキ", "話 016-017", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"19", "https://kxx.moe/c/b69aee.htm", "https://kmimg.moex.ink/cover/sigl/3b7/69e/3b769ed8e29ce39205e602373611b341.jpg!cover_l?sign=72bcc6bc9e4e1364-2066832000-kmoe-0-0", "#C8C8CD",
+                           "none", "none", "none", "none",
+                           "8.4", "普普通通輕音部", "出內テツオ,クワハリ", "卷 01", "02-09" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"20", "https://kxx.moe/c/b0c995.htm", "https://kmimg.moex.ink/cover/sigl/7c3/e2c/7c3e2ce40d80bf20149555b26132af5a.jpg!cover_l?sign=5a33b0e64e533635-2066832000-kmoe-0-0", "#0089A7",
+                           "none", "", "none", "none",
+                           "6.0", "BLESS", "園山ゆきの", "Vol. 05", "昨天" );
+        </script>
+
+        <script language='javascript'>
+            disp_divinfo( "div_info_"+"21", "https://kxx.moe/c/e905e8.htm", "https://kmimg.moex.ink/cover/sigl/2c2/db7/2c2db772168255d73bedaaf18e0435cd.jpg!cover_l?sign=e1b8056e213bccdf-2066832000-kmoe-0-0", "#6A4C9C",
+                           "", "none", "none", "none",
+                           "6.0", "魔入りました！入間くん", "西修", "Vol. 47", "昨天" );
+        </script>
+
+
+        <script language='javascript'>
+            disp_divpage( "input_go_2", "", "998",
+                           false, true, false, true,
+                           "01", "02", "03", "04", "05",
+                           "https://kxx.moe/l/--/1.htm", "https://kxx.moe/l/--/11.htm", "https://kxx.moe/l/--/0.htm", "https://kxx.moe/l/--/2.htm",
+                           "https://kxx.moe/l/--/1.htm", "https://kxx.moe/l/--/2.htm", "https://kxx.moe/l/--/3.htm", "https://kxx.moe/l/--/4.htm", "https://kxx.moe/l/--/5.htm",
+                           "--" );
+        </script>
+
+  </table>
+</div>
+
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<div class="hr_10"></div>
+<center class="bg_line_green"></center>
+<div class="hr_10"></div>
+<div id="page_foot">
+  <div class="pagefoot">
+    <a href="https://kxx.moe/m/">手機版</a>　&nbsp;
+    <a href="https://kxx.moe/n/">Kindle版</a>　&nbsp;
+    <a href="https://comic.im" target="_blank">English Version</a>
+  </div>
+  <div class="pagefoot">
+    本站內容均由網友上傳，如有疑問或爭議請聯繫 mail&#64;kmoe.one
+  </div>
+  <div class="pagefoot">
+    &equiv;　2026　Kmoe ｜ <a href="https://kxx.moe">kxx.moe</a>　<a href="https://kzz.moe">kzz.moe</a>　<a href="https://koz.moe">koz.moe</a>　&equiv;
+  </div>
+</div>
+</body>
+</html>
+<iframe name="iframe_action"   id="iframe_action"   src="" height="0" width="0" style="display:none"></iframe>
+<script src="/volcomm.js?0501" type="text/javascript" language="javascript"></script>
+<script language='javascript'>
+
+    if ( parseInt("0") >= 1 ) {
+        var obj_filter = document.getElementsByName("click_filter");
+        var i = 0;
+        for( i=0; i<obj_filter.length; i++ ) {
+            //obj_filter[i].setAttribute( "style", "color:#A8A8AD;" );
+        } // for
+    } // if
+    if ( document.getElementById("sel_order_sortpoint") ) {
+        document.getElementById("sel_order_sortpoint").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_lang_all") ) {
+        document.getElementById("sel_lang_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_blen_all") ) {
+        document.getElementById("sel_blen_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_status_all") ) {
+        document.getElementById("sel_status_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_region_all") ) {
+        document.getElementById("sel_region_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_type_all") ) {
+        //document.getElementById("sel_type_all").setAttribute( "style", "background-color: #66CCFF; color: #000000" );
+        document.getElementById("sel_type_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+    } // if
+    if ( document.getElementById("sel_igno_all") ) {
+        //document.getElementById("sel_igno_all").setAttribute( "style", "background-color: #66CCFF; color: #000000" );
+        document.getElementById("sel_igno_all").setAttribute( "style", "color:#000000;background-color:#7DB9DE;" );
+        document.getElementById("sel_igno_all").innerText = "";
+    } // if
+    if ( document.getElementById("sel_type_耽美") ) {
+        //document.getElementById("sel_type_耽美").setAttribute( "style", "background-color: #F8F8F8; color: #8F8F8F" );
+        document.getElementById("sel_type_耽美").setAttribute( "style", "color:#A5DEE4;text-shadow:0px 0px 14px #000000;" );
+    } // if
+    if ( document.getElementById("sel_igno_耽美") ) {
+        document.getElementById("sel_igno_耽美").innerText = "";
+        //document.getElementById("sel_igno_clean_耽美").innerText = "O";
+        //document.getElementById("info_igno").style.display = "";
+    } // if
+    if ( parseInt("0") >= 1 ) {
+        document.getElementById("sel_filter_color").setAttribute( "style", "background-color:#FC9F4D;" );
+    } // if
+    if ( parseInt("0") >= 1 ) {
+        document.getElementById("sel_filter_hd").setAttribute( "style", "background-color:#FC9F4D;" );
+    } // if
+    if ( document.getElementsByName("link_page") ) {
+        var obj_link = document.getElementsByName("link_page");
+        var i = 0;
+        var page_now = "01";
+        for( i=0; i<obj_link.length; i++ ) {
+            if ( obj_link[i].innerHTML == page_now ) obj_link[i].innerHTML = "<b><u>" + obj_link[i].innerHTML+ "</u></b>";
+            if ( obj_link[i].innerHTML.length <= 0 ) obj_link[i].style.display = "none";
+        } // for
+    } // if
+
+
+    function do_page_go( str_search, str_input )
+    {
+        var obj_input;
+        obj_input = document.getElementById( str_input );
+        if ( parseInt(obj_input.value) <= 0 ) {
+            return( false );
+        } // if
+
+        window.location.href = "/l/" + str_search + "/" + obj_input.value + ".htm";
+        //window.location.reload();
+        return( false );
+    } // function
+
+
+    document.body.style="background-image:url('https://webimg.mixmoe.com/moe-bg/bg-251019.jpg?0');background-size:2000px 250px;";
+</script>
+
