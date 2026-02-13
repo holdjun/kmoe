@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import structlog
@@ -297,7 +297,7 @@ async def download_volume(
         title=volume.title,
         format=format_name,
         filename=filename,
-        downloaded_at=datetime.now(UTC),
+        downloaded_at=datetime.now(timezone.utc),
         size_bytes=size_bytes,
     )
     # Deduplicate and append

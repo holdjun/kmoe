@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
@@ -159,7 +159,7 @@ def _seed_entry(
         title=vol.title,
         format="epub",
         filename="[Kmoe][Test Comic]Vol 01.epub",
-        downloaded_at=datetime.now(UTC),
+        downloaded_at=datetime.now(timezone.utc),
         size_bytes=1024,
     )
     add_downloaded_volume(config, entry, dv, update_index=False)

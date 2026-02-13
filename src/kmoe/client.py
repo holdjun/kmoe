@@ -58,6 +58,15 @@ class KmoeClient:
                 mirrors.append(domain)
         return mirrors
 
+    def set_cookies(self, cookies: dict[str, str]) -> None:
+        """Set cookies on the underlying HTTP client."""
+        for name, value in cookies.items():
+            self._client.cookies.set(name, value)
+
+    def get_cookies(self) -> dict[str, str]:
+        """Return current cookies as a plain dict."""
+        return dict(self._client.cookies.items())
+
     async def _rate_limit(self) -> None:
         """Enforce rate limiting by sleeping if needed since last request."""
         now = time.monotonic()

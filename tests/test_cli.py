@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -181,7 +181,7 @@ def _make_entry(
             title=f"Vol {vid}",
             format="epub",
             filename=f"[Kmoe][Test Comic]Vol {vid}.epub",
-            downloaded_at=datetime.now(UTC),
+            downloaded_at=datetime.now(timezone.utc),
             size_bytes=1024,
         )
         for vid in (downloaded_vol_ids or [])

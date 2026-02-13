@@ -79,8 +79,7 @@ def _apply_session(client: KmoeClient) -> None:
     """Load saved session cookies and apply them to the client."""
     cookies = load_session()
     if cookies:
-        for name, value in cookies.items():
-            client._client.cookies.set(name, value)
+        client.set_cookies(cookies)
 
 
 def _add_user_rows(table: Table, user: UserStatus) -> None:
@@ -89,10 +88,10 @@ def _add_user_rows(table: Table, user: UserStatus) -> None:
     table.add_row("Level", str(user.level))
     table.add_row("VIP", "Yes" if user.is_vip else "No")
     if user.quota_free_month > 0:
-        used = user.quota_remaining + user.quota_extra
+        available = user.quota_remaining + user.quota_extra
         table.add_row(
             "Quota",
-            f"{used:.1f} / {user.quota_free_month:.1f} MB "
+            f"{available:.1f} / {user.quota_free_month:.1f} MB "
             f"(remaining: {user.quota_remaining:.1f} + extra: {user.quota_extra:.1f} MB)",
         )
     else:

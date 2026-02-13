@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import tarfile
 import zipfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from kmoe.library import (
@@ -48,7 +48,7 @@ def _downloaded_vol(vol_id: str = "1001", title: str = "Vol 01") -> DownloadedVo
         title=title,
         format="epub",
         filename=f"[Kmoe][Test Comic]{title}.epub",
-        downloaded_at=datetime.now(UTC),
+        downloaded_at=datetime.now(timezone.utc),
         size_bytes=1024,
     )
 
