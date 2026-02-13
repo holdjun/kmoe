@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -153,7 +153,7 @@ def _seed_entry(
 ) -> None:
     """Pre-populate a library entry with one downloaded volume record."""
     entry = LibraryEntry(book_id="18488", comic_id=comic_id, title="Test Comic", meta=detail.meta)
-    save_entry(config, entry, update_index=False)
+    save_entry(config, entry)
     dv = DownloadedVolume(
         vol_id=vol.vol_id,
         title=vol.title,
@@ -162,7 +162,7 @@ def _seed_entry(
         downloaded_at=datetime.now(timezone.utc),
         size_bytes=1024,
     )
-    add_downloaded_volume(config, entry, dv, update_index=False)
+    add_downloaded_volume(config, entry, dv)
 
 
 class TestDownloadVolumeSkip:
@@ -319,14 +319,3 @@ class TestDownloadVolumes:
         assert len(batch.results) == 1
         assert len(batch.errors) == 1
         assert batch.errors[0][0] == "1002"
-
-    async def test_index_rebuilt_once(self, tmp_path: Path) -> None:
-        """When batch downloads complete, then root index is rebuilt exactly once."""
-        config = _config(tmp_path)
-        vols = [_volume("1001", "Vol 01"), _volume("1002", "Vol 02")]
-        detail = _detail(volumes=vols)
-        client = _mock_client(urls=["https://cdn/a"] * 4)
-
-        with patch("kmoe.download.update_root_index") as mock_rebuild:
-            await download_volumes(client, config, detail, ["1001", "1002"], DownloadFormat.EPUB)
-            assert mock_rebuild.call_count == 1

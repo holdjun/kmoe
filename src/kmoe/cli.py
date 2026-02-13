@@ -25,16 +25,15 @@ from kmoe.download import DownloadResult, download_volume, resolve_format
 from kmoe.exceptions import KmoeError, QuotaExhaustedError
 from kmoe.library import (
     detect_title_from_directory,
-    find_stale_volumes,
+    find_missing_vol_ids,
+    get_comic_dir,
     import_directory,
     list_library,
-    load_index,
     match_files_to_volumes,
-    rebuild_index,
     refresh_entry_from_detail,
+    rescan_entry,
     save_entry,
     scan_book_files,
-    update_root_index,
 )
 from kmoe.models import AppConfig, ComicDetail, LibraryEntry, UserStatus
 from kmoe.search import search, sort_by_language_and_score
@@ -485,7 +484,6 @@ async def _download_with_progress(
                         detail,
                         vid,
                         dl_format,
-                        update_index=False,
                         progress_callback=chunk_cb,
                         total_callback=total_cb,
                     )
@@ -591,7 +589,6 @@ async def _download(comic_id: str, volumes_str: str | None, fmt_str: str | None)
             results, errors = await _download_with_progress(
                 client, config, detail, vol_ids, dl_format
             )
-            update_root_index(config)
 
     except KmoeError as exc:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
@@ -612,29 +609,6 @@ def library(
 ) -> None:
     """List local library."""
     config = get_or_create_config()
-
-    # Try the root index first for speed
-    index = load_index(config)
-    if index and index.comics:
-        table = Table(title="Local Library")
-        table.add_column("ID", style="cyan")
-        table.add_column("Title", style="bold")
-        table.add_column("Volumes")
-        table.add_column("Complete")
-
-        for c in index.comics:
-            vol_str = (
-                f"{c.downloaded_volumes}/{c.total_volumes}"
-                if c.total_volumes > 0
-                else str(c.downloaded_volumes)
-            )
-            complete_str = "[green]Yes[/green]" if c.is_complete else "[yellow]No[/yellow]"
-            table.add_row(c.book_id, c.title, vol_str, complete_str)
-
-        console.print(table)
-        return
-
-    # Fall back to scanning subdirectories
     entries = list_library(config)
 
     if not entries:
@@ -728,10 +702,10 @@ async def _update(
 
                 # Refresh metadata regardless
                 refreshed = refresh_entry_from_detail(entry, detail)
-                save_entry(config, refreshed, update_index=False)
+                save_entry(config, refreshed)
 
                 # Find missing or corrupt volumes
-                stale = find_stale_volumes(config, refreshed, detail)
+                stale = find_missing_vol_ids(refreshed, detail)
 
                 if stale:
                     updates.append((refreshed, detail, stale))
@@ -743,7 +717,6 @@ async def _update(
 
             if not updates:
                 console.print("[green]Everything is up to date.[/green]")
-                update_root_index(config)
                 return
 
             # Phase 2: show summary
@@ -767,7 +740,6 @@ async def _update(
 
             if dry_run:
                 console.print("[yellow]Dry run — no downloads performed.[/yellow]")
-                update_root_index(config)
                 return
 
             # Phase 3: confirm
@@ -775,7 +747,6 @@ async def _update(
                 proceed = typer.confirm("Download new volumes?")
                 if not proceed:
                     console.print("[yellow]Cancelled.[/yellow]")
-                    update_root_index(config)
                     return
 
             # Phase 4: download
@@ -791,8 +762,6 @@ async def _update(
                 )
                 all_results.extend(results)
                 all_errors.extend(errors)
-
-            update_root_index(config)
 
     except KmoeError as exc:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
@@ -819,8 +788,6 @@ def scan(
 
 
 async def _scan(dry_run: bool) -> None:
-    from kmoe.library import get_comic_dir
-
     config = get_or_create_config()
     dl_dir = config.download_dir
 
@@ -828,52 +795,89 @@ async def _scan(dry_run: bool) -> None:
         console.print(f"[red]Download directory does not exist: {dl_dir}[/red]")
         raise typer.Exit(1) from None
 
-    # Collect directories to process
-    dirs_to_scan: list[tuple[Path, str]] = []
+    # Classify directories into tracked (has valid library.json) and untracked
+    tracked: list[tuple[Path, LibraryEntry]] = []
+    untracked: list[tuple[Path, str]] = []
 
     for child in sorted(dl_dir.iterdir()):
         if not child.is_dir():
             continue
 
-        # Skip if already has a library.json with a book_id
         lib_path = child / "library.json"
         if lib_path.exists():
             try:
                 raw = lib_path.read_text(encoding="utf-8")
                 entry = LibraryEntry.model_validate_json(raw)
                 if entry.book_id:
-                    console.print(
-                        f"[dim]Skip {child.name} (already tracked: {entry.book_id})[/dim]"
-                    )
+                    tracked.append((child, entry))
                     continue
             except Exception:
                 pass
 
-        # Try to detect title from files
+        # Untracked: try to detect title from files
         title = detect_title_from_directory(child)
         if title is None:
             console.print(f"[yellow]Skip {child.name} (no recognizable files)[/yellow]")
             continue
 
-        dirs_to_scan.append((child, title))
+        untracked.append((child, title))
 
-    if not dirs_to_scan:
-        console.print("[green]All directories are already tracked.[/green]")
-        if not dry_run:
-            rebuild_index(config)
+    total = len(tracked) + len(untracked)
+    if total == 0:
+        console.print("[yellow]No directories found.[/yellow]")
         return
 
-    # Search Kmoe for each title
-    console.print(f"\nFound {len(dirs_to_scan)} directory(ies) to scan:\n")
+    console.print(f"Found {total} directory(ies): {len(tracked)} tracked, {len(untracked)} new\n")
 
     try:
         async with KmoeClient(config) as client:
             _apply_session(client)
 
-            for dir_path, title in dirs_to_scan:
+            # --- Tracked directories: rescan files and rebuild library.json ---
+            for dir_path, entry in tracked:
+                cid = entry.comic_id or entry.book_id
+                console.print(f"[bold]{dir_path.name}[/bold] (tracked: {cid})")
+
+                try:
+                    detail = await get_comic_detail(client, cid)
+                except KmoeError as exc:
+                    console.print(f"  [yellow]Skip: {exc.message}[/yellow]")
+                    continue
+
+                if dry_run:
+                    files = scan_book_files(dir_path)
+                    match_result = match_files_to_volumes(files, detail.volumes)
+                    console.print(
+                        f"  Files: {len(files)}, Matched volumes: "
+                        f"{len(match_result.matched)}/{len(detail.volumes)}"
+                    )
+                    if match_result.unmatched:
+                        console.print(
+                            f"  [yellow]Unmatched files: {len(match_result.unmatched)}[/yellow]"
+                        )
+                        for ufile in match_result.unmatched:
+                            console.print(f"    - {ufile.name}")
+                else:
+                    try:
+                        updated, unmatched_files = rescan_entry(config, dir_path, entry, detail)
+                        console.print(
+                            f"  [green]Rescanned: {len(updated.downloaded_volumes)}"
+                            f"/{updated.total_volumes} volumes"
+                            f" (complete: {'Yes' if updated.is_complete else 'No'})[/green]"
+                        )
+                        if unmatched_files:
+                            console.print(
+                                f"  [yellow]Unmatched files: {len(unmatched_files)}[/yellow]"
+                            )
+                            for ufile in unmatched_files:
+                                console.print(f"    - {ufile.name}")
+                    except Exception as exc:
+                        console.print(f"  [red]Rescan failed: {exc}[/red]")
+
+            # --- Untracked directories: search + import ---
+            for dir_path, title in untracked:
                 console.print(f"[bold]{dir_path.name}[/bold] -> title: [cyan]{title}[/cyan]")
 
-                # Search for the comic
                 try:
                     response = await search(
                         client, title, page=1, language=config.preferred_language
@@ -897,13 +901,13 @@ async def _scan(dry_run: bool) -> None:
 
                 console.print(f"  Matched: [cyan]{matched.comic_id}[/cyan] - {matched.title}")
 
-                if dry_run:
-                    try:
-                        detail = await get_comic_detail(client, matched.comic_id)
-                    except KmoeError as exc:
-                        console.print(f"  [red]Detail fetch failed: {exc.message}[/red]")
-                        continue
+                try:
+                    detail = await get_comic_detail(client, matched.comic_id)
+                except KmoeError as exc:
+                    console.print(f"  [red]Detail fetch failed: {exc.message}[/red]")
+                    continue
 
+                if dry_run:
                     files = scan_book_files(dir_path)
                     match_result = match_files_to_volumes(files, detail.volumes)
                     canonical = get_comic_dir(config, matched.comic_id, detail.meta.title)
@@ -920,20 +924,20 @@ async def _scan(dry_run: bool) -> None:
                             console.print(f"    - {ufile.name}")
                     if dir_path != canonical:
                         console.print(f"  Rename: {dir_path.name} -> {canonical.name}")
-                    console.print()
                 else:
                     try:
-                        detail = await get_comic_detail(client, matched.comic_id)
-                        entry, unmatched = import_directory(
+                        entry, unmatched_files = import_directory(
                             config, dir_path, matched.comic_id, detail
                         )
                         console.print(
                             f"  [green]Imported: {len(entry.downloaded_volumes)} volumes"
                             f" (complete: {'Yes' if entry.is_complete else 'No'})[/green]"
                         )
-                        if unmatched:
-                            console.print(f"  [yellow]Unmatched files: {len(unmatched)}[/yellow]")
-                            for ufile in unmatched:
+                        if unmatched_files:
+                            console.print(
+                                f"  [yellow]Unmatched files: {len(unmatched_files)}[/yellow]"
+                            )
+                            for ufile in unmatched_files:
                                 console.print(f"    - {ufile.name}")
                     except KmoeError as exc:
                         console.print(f"  [red]Import failed: {exc.message}[/red]")
@@ -944,11 +948,10 @@ async def _scan(dry_run: bool) -> None:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
         raise typer.Exit(1) from None
 
-    if not dry_run:
-        rebuild_index(config)
-        console.print("\n[green]Scan complete. Root index updated.[/green]")
-    else:
+    if dry_run:
         console.print("\n[yellow]Dry run complete. No changes made.[/yellow]")
+    else:
+        console.print("\n[green]Scan complete.[/green]")
 
 
 # ---------------------------------------------------------------------------

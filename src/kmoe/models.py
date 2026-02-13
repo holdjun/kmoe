@@ -105,27 +105,6 @@ class LibraryEntry(BaseModel):
     is_complete: bool = False
 
 
-class LibraryIndexEntry(BaseModel):
-    """Summary entry for a comic in the root library index."""
-
-    book_id: str
-    title: str
-    dir_name: str
-    authors: list[str] = []
-    status: str = ""
-    total_volumes: int = 0
-    downloaded_volumes: int = 0
-    is_complete: bool = False
-
-
-class LibraryIndex(BaseModel):
-    """Root-level library index aggregating all comics."""
-
-    version: str = "1.0"
-    updated_at: datetime
-    comics: list[LibraryIndexEntry] = []
-
-
 # ---------------------------------------------------------------------------
 # User / session
 # ---------------------------------------------------------------------------

@@ -21,7 +21,6 @@ from kmoe.library import (
     load_entry,
     refresh_entry_from_detail,
     save_entry,
-    update_root_index,
 )
 from kmoe.models import DownloadedVolume, LibraryEntry
 from kmoe.utils import sanitize_filename
@@ -190,7 +189,6 @@ async def download_volume(
     vol_id: str,
     fmt: DownloadFormat,
     *,
-    update_index: bool = True,
     progress_callback: Callable[[int], None] | None = None,
     total_callback: Callable[[int], None] | None = None,
 ) -> DownloadResult:
@@ -202,7 +200,6 @@ async def download_volume(
         detail: The comic detail (metadata + volume list).
         vol_id: The volume ID to download.
         fmt: The desired download format.
-        update_index: Whether to trigger a root index rebuild after saving.
         progress_callback: Optional callback invoked with the number of bytes
             received for each chunk.
         total_callback: Optional callback invoked once with the total size in
@@ -307,7 +304,7 @@ async def download_volume(
     entry.downloaded_volumes.append(downloaded_vol)
     # Refresh metadata, total_volumes, is_complete from remote detail
     entry = refresh_entry_from_detail(entry, detail)
-    save_entry(config, entry, update_index=update_index)
+    save_entry(config, entry)
 
     log.info(
         "volume downloaded",
@@ -370,7 +367,6 @@ async def download_volumes(
                     detail,
                     vol_id,
                     fmt,
-                    update_index=False,
                     progress_callback=progress_callback,
                 )
             except Exception as exc:
@@ -389,8 +385,5 @@ async def download_volumes(
             errors.append(item)  # type: ignore[arg-type]
         else:
             results.append(item)  # type: ignore[arg-type]
-
-    # Rebuild root index once after all downloads complete
-    update_root_index(config)
 
     return BatchDownloadResult(results=results, errors=errors)
