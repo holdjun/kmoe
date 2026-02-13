@@ -204,7 +204,6 @@ basedpyright 标准模式，忽略 `platformdirs` 的可选导入错误
 | `update` | 更新漫画（下载新卷） |
 | `scan` | 导入已有目录 |
 | `link` | 手动关联目录到漫画 |
-| `config` | 显示配置 |
 
 ## 添加新功能
 
@@ -219,11 +218,5 @@ basedpyright 标准模式，忽略 `platformdirs` 的可选导入错误
 - 下载文件：`[kmoe][{title}]{vol_title}.{format}`
 - 目录：`{sanitized_title}_{book_id}`
 - 元数据：`library.json`（JSON 格式，缩进 2 空格）
-- 配置：`config.toml`（带中文注释）
+- 配置：`config.toml`（带注释）
 - Session：`session.enc`（Fernet 加密）
-
-## 不做的事
-
-- 不支持断点续传（文件小，重下即可）
-- 不支持批量更新检测（用户按需下载）
-- 不支持 GUI（纯 CLI）
