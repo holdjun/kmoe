@@ -62,7 +62,7 @@ parser → models
 
 ## 数据模型
 
-定义在 `models.py`。带 `frozen=True` 的模型不可变（`ComicMeta`, `Volume`, `SearchResult`, `UserStatus`），其余模型可变（`ComicDetail`, `LibraryEntry`, `DownloadedVolume`, `SearchResponse`, `LibraryIndex`, `LibraryIndexEntry`）。
+定义在 `models.py`。带 `frozen=True` 的模型不可变（`ComicMeta`, `Volume`, `SearchResult`, `UserStatus`），其余模型可变（`ComicDetail`, `LibraryEntry`, `DownloadedVolume`, `SearchResponse`）。
 
 ### ComicMeta
 漫画元数据：`book_id`, `title`, `authors`, `status`, `region`, `categories`, `score`, `cover_url`, `description`
@@ -151,13 +151,54 @@ GET /getdownurl.php?b={book_id}&v={vol_id}&mobi={fmt}&vip={line}&json=1
 
 ```
 {download_dir}/
-  library.json                              # 根索引（可选）
   {sanitized_title}_{book_id}/
-    library.json                            # 元数据
-    [kmoe][{title}]{vol_title}.{format}    # 文件
+    library.json                            # 唯一元数据源
+    [Kmoe][{title}]{vol_title}.{format}    # 下载文件
+    *.zip / *.tar                           # 归档（内含 epub/mobi）
 ```
 
 文件名清理：`/\:*?"<>|` → `_`，去首尾空白/点，截断 200 字符
+
+### library.json
+
+每个漫画目录下唯一的元数据文件，无根索引。格式：
+
+```json
+{
+  "book_id": "55387",
+  "comic_id": "55387",
+  "title": "夏日時光",
+  "meta": { /* ComicMeta */ },
+  "downloaded_volumes": [
+    {
+      "vol_id": "1001",
+      "title": "卷 01",
+      "format": "epub",
+      "filename": "[Kmoe][夏日時光]卷 01.epub",
+      "downloaded_at": "2026-02-12T06:41:01Z",
+      "size_bytes": 151703850
+    }
+  ],
+  "total_volumes": 15,
+  "last_checked": "2026-02-13T09:34:23Z",
+  "is_complete": true
+}
+```
+
+归档内文件的 `filename` 格式为 `archive.zip/file.epub`。
+
+### 各命令与 library.json 的关系
+
+| 命令 | 写 library.json | 校验体积 | 说明 |
+|------|:-:|:-:|------|
+| `download` | 是 | 否 | 下载成功后新增/更新记录 |
+| `scan` | 是（覆盖） | 是 | 扫描磁盘文件 + 远端详情，重建整个 library.json |
+| `link` | 是（覆盖） | 是 | 同 scan，但 comic_id 手动指定 |
+| `update` | 间接 | 否 | 比对 library.json vs 远端 vol_ids，缺失的调 download |
+| `library` | 否 | 否 | 只读，遍历子目录的 library.json 汇总展示 |
+
+- **体积校验**：scan/link 构建 `downloaded_volumes` 时，跳过实际大小 < 预期大小 50% 的文件
+- **update 不做磁盘检查**：只比较 vol_id 集合差集，磁盘完整性由 scan 负责
 
 ## 开发
 
@@ -201,8 +242,8 @@ basedpyright 标准模式，忽略 `platformdirs` 的可选导入错误
 | `info` | 查看漫画详情 |
 | `download` | 下载漫画 |
 | `library` | 查看本地库 |
-| `update` | 更新漫画（下载新卷） |
-| `scan` | 导入已有目录 |
+| `update` | 检查远端新卷并下载 |
+| `scan` | 扫描所有目录，重建 library.json |
 | `link` | 手动关联目录到漫画 |
 
 ## 添加新功能

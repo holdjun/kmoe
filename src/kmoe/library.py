@@ -5,7 +5,6 @@ with a ``library.json`` file that tracks metadata and downloaded volumes.
 
 Directory layout::
 
-    {download_dir}/library.json                       # root index
     {download_dir}/{sanitized_title}_{book_id}/library.json
 """
 
@@ -25,8 +24,6 @@ from kmoe.models import (
     ComicDetail,
     DownloadedVolume,
     LibraryEntry,
-    LibraryIndex,
-    LibraryIndexEntry,
     Volume,
 )
 from kmoe.utils import ensure_dir, sanitize_filename
@@ -77,58 +74,6 @@ def get_comic_dir(config: AppConfig, comic_id: str, title: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Root index
-# ---------------------------------------------------------------------------
-
-
-def _index_path(config: AppConfig) -> Path:
-    return config.download_dir / "library.json"
-
-
-def load_index(config: AppConfig) -> LibraryIndex | None:
-    """Load the root library index."""
-    path = _index_path(config)
-    if not path.exists():
-        return None
-    try:
-        raw = path.read_text(encoding="utf-8")
-        return LibraryIndex.model_validate_json(raw)
-    except Exception:
-        log.warning("failed to load library index", path=str(path))
-        return None
-
-
-def save_index(config: AppConfig, entries: list[LibraryEntry]) -> None:
-    """Build and persist the root library index from per-comic entries."""
-    comics: list[LibraryIndexEntry] = []
-    for entry in entries:
-        comic_dir = get_comic_dir(config, entry.comic_id or entry.book_id, entry.title)
-        comics.append(
-            LibraryIndexEntry(
-                book_id=entry.book_id,
-                title=entry.title,
-                dir_name=comic_dir.name,
-                authors=entry.meta.authors,
-                status=entry.meta.status,
-                total_volumes=entry.total_volumes,
-                downloaded_volumes=len(entry.downloaded_volumes),
-                is_complete=entry.is_complete,
-            )
-        )
-
-    index = LibraryIndex(updated_at=datetime.now(timezone.utc), comics=comics)
-    ensure_dir(config.download_dir)
-    _index_path(config).write_text(index.model_dump_json(indent=2), encoding="utf-8")
-
-
-def rebuild_index(config: AppConfig) -> LibraryIndex:
-    """Scan all subdirectory library.json files and rebuild the root index."""
-    entries = list_library(config)
-    save_index(config, entries)
-    return load_index(config) or LibraryIndex(updated_at=datetime.now(timezone.utc))
-
-
-# ---------------------------------------------------------------------------
 # Load / save
 # ---------------------------------------------------------------------------
 
@@ -154,33 +99,15 @@ def load_entry(config: AppConfig, comic_id: str, title: str) -> LibraryEntry | N
         return None
 
 
-def save_entry(config: AppConfig, entry: LibraryEntry, *, update_index: bool = True) -> None:
+def save_entry(config: AppConfig, entry: LibraryEntry) -> None:
     """Persist a :class:`LibraryEntry` to ``library.json``.
 
     Creates the comic directory if it does not already exist.
-
-    Args:
-        config: Application configuration.
-        entry: The library entry to save.
-        update_index: Whether to trigger a root index rebuild. Set to ``False``
-            during batch operations and call :func:`update_root_index` once at the end.
     """
     comic_dir = get_comic_dir(config, entry.comic_id or entry.book_id, entry.title)
     ensure_dir(comic_dir)
     lib_path = comic_dir / "library.json"
     lib_path.write_text(entry.model_dump_json(indent=2), encoding="utf-8")
-
-    if update_index:
-        update_root_index(config)
-
-
-def update_root_index(config: AppConfig) -> None:
-    """Re-scan subdirectories and update the root index."""
-    try:
-        entries = list_library(config)
-        save_index(config, entries)
-    except Exception:
-        log.warning("failed to update root index")
 
 
 # ---------------------------------------------------------------------------
@@ -206,8 +133,6 @@ def add_downloaded_volume(
     config: AppConfig,
     entry: LibraryEntry,
     vol: DownloadedVolume,
-    *,
-    update_index: bool = True,
 ) -> LibraryEntry:
     """Add *vol* to the entry's downloaded volumes and persist the change.
 
@@ -222,7 +147,7 @@ def add_downloaded_volume(
         if not (v.vol_id == vol.vol_id and v.format == vol.format)
     ]
     entry.downloaded_volumes.append(vol)
-    save_entry(config, entry, update_index=update_index)
+    save_entry(config, entry)
     return entry
 
 
@@ -250,48 +175,14 @@ def refresh_entry_from_detail(entry: LibraryEntry, detail: ComicDetail) -> Libra
     )
 
 
-def find_stale_volumes(
-    config: AppConfig,
-    entry: LibraryEntry,
-    detail: ComicDetail,
-) -> list[str]:
-    """Return vol_ids that are missing or have corrupt files on disk.
+def find_missing_vol_ids(entry: LibraryEntry, detail: ComicDetail) -> list[str]:
+    """Return vol_ids from remote that have no download record.
 
-    A volume is considered stale when:
-    - It exists remotely but has no download record, **or**
-    - It is recorded but the file on disk is missing, **or**
-    - It is recorded but the file size is far below the expected size
-      (less than half the expected size when the expected size is known).
+    Disk validation (file existence, size) is :func:`rescan_entry`'s job.
+    This function only compares vol_id sets so that ``update`` stays fast.
     """
-    comic_id = entry.comic_id or entry.book_id
-    comic_dir = get_comic_dir(config, comic_id, entry.title)
-
-    downloaded_map: dict[str, DownloadedVolume] = {dv.vol_id: dv for dv in entry.downloaded_volumes}
-    remote_vols: dict[str, Volume] = {v.vol_id: v for v in detail.volumes}
-
-    stale: list[str] = []
-    for vid, vol in remote_vols.items():
-        dv = downloaded_map.get(vid)
-        if dv is None:
-            # Never downloaded
-            stale.append(vid)
-            continue
-
-        # Check file exists on disk
-        fpath = comic_dir / dv.filename
-        if not fpath.exists():
-            stale.append(vid)
-            continue
-
-        # Check file size sanity
-        actual_bytes = fpath.stat().st_size
-        expected_mb = vol.size_epub_mb if dv.format == "epub" else vol.size_mobi_mb
-        if expected_mb > 0:
-            expected_bytes = expected_mb * 1024 * 1024
-            if actual_bytes < expected_bytes * 0.5:
-                stale.append(vid)
-
-    return stale
+    downloaded_ids = {v.vol_id for v in entry.downloaded_volumes}
+    return [v.vol_id for v in detail.volumes if v.vol_id not in downloaded_ids]
 
 
 # ---------------------------------------------------------------------------
@@ -504,6 +395,8 @@ def list_archive_contents(archive: Path) -> list[ScannedFile]:
                     if info.is_dir():
                         continue
                     fname = Path(_decode_zip_filename(info)).name
+                    if fname.startswith("._"):
+                        continue
                     if Path(fname).suffix.lower() in _BOOK_EXTENSIONS:
                         results.append(
                             ScannedFile(
@@ -519,6 +412,8 @@ def list_archive_contents(archive: Path) -> list[ScannedFile]:
                     if not member.isfile():
                         continue
                     fname = Path(member.name).name
+                    if fname.startswith("._"):
+                        continue
                     if Path(fname).suffix.lower() in _BOOK_EXTENSIONS:
                         results.append(
                             ScannedFile(
@@ -538,7 +433,7 @@ def scan_book_files(directory: Path) -> list[ScannedFile]:
     """Return all epub/mobi files in a directory, including inside archives."""
     files: list[ScannedFile] = []
     for f in sorted(directory.iterdir()):
-        if not f.is_file():
+        if not f.is_file() or f.name.startswith("._"):
             continue
         suffix = f.suffix.lower()
         name_lower = f.name.lower()
@@ -599,6 +494,43 @@ def detect_title_from_directory(directory: Path) -> str | None:
     return None
 
 
+def _build_downloaded_volumes(
+    matched: list[tuple[ScannedFile, Volume]],
+) -> list[DownloadedVolume]:
+    """Convert matched file-volume pairs into download records.
+
+    Skips files whose size is less than 50 % of the expected volume size
+    (when the expected size is known), treating them as corrupt/incomplete.
+    """
+    downloaded: list[DownloadedVolume] = []
+    for sf, vol in matched:
+        suffix = Path(sf.name).suffix.lower()
+        fmt = "mobi" if suffix == ".mobi" else "epub"
+
+        expected_mb = vol.size_epub_mb if fmt == "epub" else vol.size_mobi_mb
+        if expected_mb > 0 and sf.size < expected_mb * 1024 * 1024 * 0.8:
+            log.warning(
+                "skipping small file",
+                name=sf.name,
+                size_bytes=sf.size,
+                expected_mb=expected_mb,
+            )
+            continue
+
+        filename = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path is not None else sf.name
+        downloaded.append(
+            DownloadedVolume(
+                vol_id=vol.vol_id,
+                title=vol.title,
+                format=fmt,
+                filename=filename,
+                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
+                size_bytes=sf.size,
+            )
+        )
+    return downloaded
+
+
 def import_directory(
     config: AppConfig,
     dir_path: Path,
@@ -611,42 +543,14 @@ def import_directory(
     volumes, creates a LibraryEntry, saves library.json, and renames the
     directory to the canonical format.
 
-    Args:
-        config: Application configuration.
-        dir_path: Path to the directory to import.
-        comic_id: The URL-form comic ID (for directory naming).
-        detail: Comic detail including meta and volumes.
-
     Returns the created LibraryEntry and a list of unmatched files.
     """
     meta = detail.meta
     title = meta.title
 
-    # Scan files (including archive contents)
     files = scan_book_files(dir_path)
-
-    # Match to volumes
     match_result = match_files_to_volumes(files, detail.volumes)
-
-    # Build downloaded volumes list
-    downloaded: list[DownloadedVolume] = []
-    for sf, vol in match_result.matched:
-        suffix = Path(sf.name).suffix.lower()
-        fmt = "mobi" if suffix == ".mobi" else "epub"
-
-        # For files inside archives, record as "archive.zip/filename"
-        filename = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path is not None else sf.name
-
-        downloaded.append(
-            DownloadedVolume(
-                vol_id=vol.vol_id,
-                title=vol.title,
-                format=fmt,
-                filename=filename,
-                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
-                size_bytes=sf.size,
-            )
-        )
+    downloaded = _build_downloaded_volumes(match_result.matched)
 
     entry = refresh_entry_from_detail(
         LibraryEntry(
@@ -669,7 +573,37 @@ def import_directory(
         dir_path.rename(canonical_dir)
         log.info("renamed directory", old=dir_path.name, new=canonical_dir.name)
 
-    # Update root index
-    update_root_index(config)
-
     return entry, match_result.unmatched
+
+
+def rescan_entry(
+    config: AppConfig,
+    dir_path: Path,
+    entry: LibraryEntry,
+    detail: ComicDetail,
+) -> tuple[LibraryEntry, list[ScannedFile]]:
+    """Re-scan an already-tracked directory and rebuild its library entry.
+
+    Unlike :func:`import_directory`, this skips the search step and does not
+    rename the directory.  It re-scans disk files, re-matches them to remote
+    volumes, and replaces ``downloaded_volumes`` with the match results.
+
+    Returns the updated entry and a list of unmatched files.
+    """
+    files = scan_book_files(dir_path)
+    match_result = match_files_to_volumes(files, detail.volumes)
+    downloaded = _build_downloaded_volumes(match_result.matched)
+
+    updated = refresh_entry_from_detail(
+        LibraryEntry(
+            book_id=entry.book_id,
+            comic_id=entry.comic_id or detail.meta.comic_id,
+            title=detail.meta.title,
+            meta=entry.meta,
+            downloaded_volumes=downloaded,
+        ),
+        detail,
+    )
+
+    save_entry(config, updated)
+    return updated, match_result.unmatched

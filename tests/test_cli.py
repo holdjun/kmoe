@@ -215,7 +215,6 @@ def test_update_empty_library(
     assert "empty" in result.output.lower()
 
 
-@patch("kmoe.cli.update_root_index")
 @patch("kmoe.cli.save_entry")
 @patch(
     "kmoe.cli.get_comic_detail",
@@ -235,7 +234,6 @@ def test_update_dry_run_shows_missing(
     mock_list: object,
     _mock_detail: object,
     _mock_save: object,
-    _mock_idx: object,
 ) -> None:
     """Dry run shows available updates without downloading."""
     _mock_client_ctx(mock_client_cls)
@@ -248,9 +246,8 @@ def test_update_dry_run_shows_missing(
     assert "Dry run" in result.output
 
 
-@patch("kmoe.cli.update_root_index")
 @patch("kmoe.cli.save_entry")
-@patch("kmoe.cli.find_stale_volumes", return_value=[])
+@patch("kmoe.cli.find_missing_vol_ids", return_value=[])
 @patch(
     "kmoe.cli.get_comic_detail",
     new_callable=AsyncMock,
@@ -268,7 +265,6 @@ def test_update_all_up_to_date(
     _mock_detail: object,
     _mock_stale: object,
     _mock_save: object,
-    _mock_idx: object,
 ) -> None:
     """When all volumes are downloaded, shows up to date."""
     _mock_client_ctx(mock_client_cls)

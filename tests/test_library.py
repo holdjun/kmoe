@@ -9,15 +9,13 @@ from pathlib import Path
 
 from kmoe.library import (
     ScannedFile,
-    find_stale_volumes,
-    get_comic_dir,
+    find_missing_vol_ids,
     list_archive_contents,
     match_files_to_volumes,
     refresh_entry_from_detail,
     scan_book_files,
 )
 from kmoe.models import (
-    AppConfig,
     ComicDetail,
     ComicMeta,
     DownloadedVolume,
@@ -288,82 +286,25 @@ class TestMatchFilesToVolumes:
 
 
 # ---------------------------------------------------------------------------
-# find_stale_volumes
+# find_missing_vol_ids
 # ---------------------------------------------------------------------------
 
 
-def _config(tmp_path: Path) -> AppConfig:
-    return AppConfig(download_dir=tmp_path)
-
-
-class TestFindStaleVolumes:
-    def test_missing_volume(self, tmp_path: Path) -> None:
-        """Volume not in downloaded_volumes is returned as stale."""
-        config = _config(tmp_path)
+class TestFindMissingVolIds:
+    def test_returns_missing(self) -> None:
+        """Vol_ids present remotely but not downloaded are returned."""
         vols = [_volume("1001", "Vol 01"), _volume("1002", "Vol 02")]
         entry = _entry(downloaded=[_downloaded_vol("1001", "Vol 01")])
-        detail = _detail(volumes=vols)
+        assert find_missing_vol_ids(entry, _detail(volumes=vols)) == ["1002"]
 
-        # Create the directory and file for vol 1001 so it's not stale
-        comic_dir = get_comic_dir(config, "abc123", "Test Comic")
-        comic_dir.mkdir(parents=True)
-        (comic_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 1024)
-
-        result = find_stale_volumes(config, entry, detail)
-        assert "1002" in result
-        assert "1001" not in result
-
-    def test_file_missing_on_disk(self, tmp_path: Path) -> None:
-        """Volume recorded but file missing on disk is stale."""
-        config = _config(tmp_path)
+    def test_all_downloaded(self) -> None:
+        """When every remote volume is downloaded, returns empty list."""
+        vols = [_volume("1001", "Vol 01")]
         entry = _entry(downloaded=[_downloaded_vol("1001", "Vol 01")])
-        detail = _detail(volumes=[_volume("1001", "Vol 01")])
+        assert find_missing_vol_ids(entry, _detail(volumes=vols)) == []
 
-        # Don't create the file
-        comic_dir = get_comic_dir(config, "abc123", "Test Comic")
-        comic_dir.mkdir(parents=True)
-
-        result = find_stale_volumes(config, entry, detail)
-        assert "1001" in result
-
-    def test_corrupt_file_too_small(self, tmp_path: Path) -> None:
-        """Volume with file much smaller than expected is stale."""
-        config = _config(tmp_path)
-        vol = Volume(vol_id="1001", title="Vol 01", size_epub_mb=100.0)
-        entry = _entry(downloaded=[_downloaded_vol("1001", "Vol 01")])
-        detail = _detail(volumes=[vol])
-
-        comic_dir = get_comic_dir(config, "abc123", "Test Comic")
-        comic_dir.mkdir(parents=True)
-        # Write only 7KB vs expected 100MB
-        (comic_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 7000)
-
-        result = find_stale_volumes(config, entry, detail)
-        assert "1001" in result
-
-    def test_healthy_file_not_stale(self, tmp_path: Path) -> None:
-        """Volume with file close to expected size is not stale."""
-        config = _config(tmp_path)
-        vol = Volume(vol_id="1001", title="Vol 01", size_epub_mb=0.001)
-        entry = _entry(downloaded=[_downloaded_vol("1001", "Vol 01")])
-        detail = _detail(volumes=[vol])
-
-        comic_dir = get_comic_dir(config, "abc123", "Test Comic")
-        comic_dir.mkdir(parents=True)
-        (comic_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 1024)
-
-        result = find_stale_volumes(config, entry, detail)
-        assert result == []
-
-    def test_no_expected_size_not_stale(self, tmp_path: Path) -> None:
-        """Volume with no expected size and file exists is not stale."""
-        config = _config(tmp_path)
-        entry = _entry(downloaded=[_downloaded_vol("1001", "Vol 01")])
-        detail = _detail(volumes=[_volume("1001", "Vol 01")])  # size_epub_mb=0
-
-        comic_dir = get_comic_dir(config, "abc123", "Test Comic")
-        comic_dir.mkdir(parents=True)
-        (comic_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 100)
-
-        result = find_stale_volumes(config, entry, detail)
-        assert result == []
+    def test_none_downloaded(self) -> None:
+        """When nothing is downloaded, returns all remote vol_ids."""
+        vols = [_volume("1001", "Vol 01"), _volume("1002", "Vol 02")]
+        entry = _entry()
+        assert find_missing_vol_ids(entry, _detail(volumes=vols)) == ["1001", "1002"]
