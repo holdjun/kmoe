@@ -59,3 +59,14 @@ jobs:
 
       - name: Type check
         run: uv run basedpyright src/
+
+  ci:
+    if: always()
+    needs: [test, type-check]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: |
+          if [[ "${{ needs.test.result }}" != "success" || "${{ needs.type-check.result }}" != "success" ]]; then
+            exit 1
+          fi
