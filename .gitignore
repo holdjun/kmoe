@@ -31,8 +31,9 @@ htmlcov/
 # ruff
 .ruff_cache/
 
-# Claude Code
-.claude/
+# Claude Code (track skills, ignore personal settings)
+.claude/*
+!.claude/skills/
 
 # OS
 .DS_Store
