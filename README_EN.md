@@ -88,6 +88,16 @@ Config file: `~/.config/kmoe/config.toml`, created automatically on first login.
 
 Configurable: download directory, default format, preferred mirror, concurrency, etc.
 
+## AI-Assisted Usage
+
+This project includes a Claude Code Skill (`.claude/skills/kmoe/`) that lets AI search, download, and manage your manga library on your behalf.
+
+It activates automatically when you open the kmoe project in Claude Code. For global access:
+
+```bash
+ln -s /path/to/kmoe/.claude/skills/kmoe ~/.claude/skills/kmoe
+```
+
 ## License
 
 [MIT](LICENSE)

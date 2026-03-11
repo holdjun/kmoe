@@ -88,6 +88,16 @@ kmoe link /path/to/manga 12345         # 手动关联
 
 可配置项：下载目录、默认格式、首选镜像、并发数等。
 
+## AI 辅助使用
+
+本项目内置 Claude Code Skill（`.claude/skills/kmoe/`），可以让 AI 代你操作 kmoe：搜索漫画、下载、管理库。
+
+在 Claude Code 中打开 kmoe 项目目录即可自动生效。如需全局使用：
+
+```bash
+ln -s /path/to/kmoe/.claude/skills/kmoe ~/.claude/skills/kmoe
+```
+
 ## License
 
 [MIT](LICENSE)
