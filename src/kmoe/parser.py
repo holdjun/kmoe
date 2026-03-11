@@ -13,7 +13,6 @@ from kmoe.models import (
     ComicMeta,
     SearchResponse,
     SearchResult,
-    UserStatus,
     Volume,
 )
 
@@ -344,50 +343,3 @@ def parse_my_page_quota(html: str) -> tuple[float, float, float]:
         quota_extra = float(extra_match.group(1))
 
     return (quota_free_month, quota_remaining, quota_extra)
-
-
-def parse_user_status(html: str) -> UserStatus:
-    """Extract user status from page JS variables."""
-    js_vars = extract_js_variables(html)
-
-    uin = js_vars.get("uin", "")
-    username = uin
-
-    level = 0
-    level_str = js_vars.get("ulevel", "0")
-    with contextlib.suppress(ValueError):
-        level = int(level_str)
-
-    is_vip = js_vars.get("is_vip", "0") == "1"
-
-    quota_now = 0.0
-    quota_str = js_vars.get("quota_now", "0")
-    with contextlib.suppress(ValueError):
-        quota_now = float(quota_str)
-
-    # Parse detailed quota breakdown (in MB)
-    quota_free_month = 0.0
-    quota_free_str = js_vars.get("quota_free_month", "0")
-    with contextlib.suppress(ValueError):
-        quota_free_month = float(quota_free_str)
-
-    quota_remaining = 0.0
-    quota_remaining_str = js_vars.get("quota_remaining", "0")
-    with contextlib.suppress(ValueError):
-        quota_remaining = float(quota_remaining_str)
-
-    quota_extra = 0.0
-    quota_extra_str = js_vars.get("quota_extra", "0")
-    with contextlib.suppress(ValueError):
-        quota_extra = float(quota_extra_str)
-
-    return UserStatus(
-        uin=uin,
-        username=username,
-        level=level,
-        is_vip=is_vip,
-        quota_now=quota_now,
-        quota_free_month=quota_free_month,
-        quota_remaining=quota_remaining,
-        quota_extra=quota_extra,
-    )

@@ -296,6 +296,7 @@ async def download_volume(
         filename=filename,
         downloaded_at=datetime.now(timezone.utc),
         size_bytes=size_bytes,
+        source="download",
     )
     # Deduplicate and append
     entry.downloaded_volumes[:] = [

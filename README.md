@@ -84,7 +84,7 @@ kmoe link /path/to/manga 12345         # 手动关联
 
 ## 配置
 
-配置文件位于 `~/.local/share/kmoe/config.toml`，登录时自动创建。
+配置文件位于 `~/.config/kmoe/config.toml`，登录时自动创建。
 
 可配置项：下载目录、默认格式、首选镜像、并发数等。
 

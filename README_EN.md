@@ -84,7 +84,7 @@ kmoe link /path/to/manga 12345         # Manually link directory to comic
 
 ## Configuration
 
-Config file: `~/.local/share/kmoe/config.toml`, created automatically on first login.
+Config file: `~/.config/kmoe/config.toml`, created automatically on first login.
 
 Configurable: download directory, default format, preferred mirror, concurrency, etc.
 

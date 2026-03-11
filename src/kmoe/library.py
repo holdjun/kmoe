@@ -496,26 +496,39 @@ def detect_title_from_directory(directory: Path) -> str | None:
 
 def _build_downloaded_volumes(
     matched: list[tuple[ScannedFile, Volume]],
+    existing: list[DownloadedVolume] | None = None,
 ) -> list[DownloadedVolume]:
     """Convert matched file-volume pairs into download records.
 
-    Skips files whose size is less than 50 % of the expected volume size
-    (when the expected size is known), treating them as corrupt/incomplete.
+    When *existing* records are provided, preserves the ``source`` field for
+    volumes previously downloaded via kmoe.  Only kmoe-downloaded volumes
+    (``source="download"``) are subject to size validation; scan-associated
+    volumes are always accepted.
     """
+    # Build lookup: (vol_id, format) -> source from existing records
+    source_lookup: dict[tuple[str, str], str] = {}
+    if existing:
+        for v in existing:
+            source_lookup[(v.vol_id, v.format)] = v.source
+
     downloaded: list[DownloadedVolume] = []
     for sf, vol in matched:
         suffix = Path(sf.name).suffix.lower()
         fmt = "mobi" if suffix == ".mobi" else "epub"
 
-        expected_mb = vol.size_epub_mb if fmt == "epub" else vol.size_mobi_mb
-        if expected_mb > 0 and sf.size < expected_mb * 1024 * 1024 * 0.8:
-            log.warning(
-                "skipping small file",
-                name=sf.name,
-                size_bytes=sf.size,
-                expected_mb=expected_mb,
-            )
-            continue
+        source = source_lookup.get((vol.vol_id, fmt), "scan")
+
+        # Only validate size for kmoe-downloaded volumes
+        if source == "download":
+            expected_mb = vol.size_epub_mb if fmt == "epub" else vol.size_mobi_mb
+            if expected_mb > 0 and sf.size < expected_mb * 1024 * 1024 * 0.8:
+                log.warning(
+                    "skipping small file",
+                    name=sf.name,
+                    size_bytes=sf.size,
+                    expected_mb=expected_mb,
+                )
+                continue
 
         filename = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path is not None else sf.name
         downloaded.append(
@@ -526,6 +539,7 @@ def _build_downloaded_volumes(
                 filename=filename,
                 downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
                 size_bytes=sf.size,
+                source=source,
             )
         )
     return downloaded
@@ -550,6 +564,7 @@ def import_directory(
 
     files = scan_book_files(dir_path)
     match_result = match_files_to_volumes(files, detail.volumes)
+    # New import: no existing records, all volumes are scan-associated
     downloaded = _build_downloaded_volumes(match_result.matched)
 
     entry = refresh_entry_from_detail(
@@ -592,7 +607,8 @@ def rescan_entry(
     """
     files = scan_book_files(dir_path)
     match_result = match_files_to_volumes(files, detail.volumes)
-    downloaded = _build_downloaded_volumes(match_result.matched)
+    # Preserve source from existing records so kmoe downloads keep size validation
+    downloaded = _build_downloaded_volumes(match_result.matched, entry.downloaded_volumes)
 
     updated = refresh_entry_from_detail(
         LibraryEntry(
