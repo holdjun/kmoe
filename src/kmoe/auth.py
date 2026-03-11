@@ -10,6 +10,7 @@ import platform
 import re
 from typing import TYPE_CHECKING
 
+import structlog
 from cryptography.fernet import Fernet, InvalidToken
 
 from kmoe.constants import URLTemplate
@@ -77,7 +78,7 @@ async def _build_user_status(client: KmoeClient, home_html: str) -> UserStatus:
         my_response = await client.get(URLTemplate.MY)
         quota_free_month, quota_remaining, quota_extra = parse_my_page_quota(my_response.text)
     except Exception:
-        pass
+        structlog.get_logger().debug("failed to fetch quota")
 
     return UserStatus(
         uin=uin,

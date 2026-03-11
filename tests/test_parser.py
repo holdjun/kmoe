@@ -8,6 +8,7 @@ from kmoe.parser import (
     extract_book_data_url,
     extract_js_variables,
     parse_comic_detail,
+    parse_my_page_quota,
     parse_search_results,
     parse_volume_data,
 )
@@ -231,3 +232,25 @@ class TestExtractJsVariables:
         result = extract_js_variables(html)
         assert "foo" not in result
         assert result["bookid"] == "123"
+
+
+# ---------------------------------------------------------------------------
+# parse_my_page_quota
+# ---------------------------------------------------------------------------
+
+
+class TestParseMyPageQuota:
+    """Given my.php HTML from the Kmoe site."""
+
+    def test_extracts_quota_values(self, my_page_html: str) -> None:
+        """When parsing a real my.php page,
+        then monthly quota, remaining, and extra are extracted."""
+        free_month, remaining, extra = parse_my_page_quota(my_page_html)
+        assert free_month == pytest.approx(3072.0)
+        assert remaining == pytest.approx(1487.5)
+        assert extra == pytest.approx(0.0)
+
+    def test_empty_html_returns_zeros(self) -> None:
+        """When HTML contains no quota info,
+        then all values are 0.0."""
+        assert parse_my_page_quota("<html></html>") == (0.0, 0.0, 0.0)

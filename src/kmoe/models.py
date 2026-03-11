@@ -90,6 +90,7 @@ class DownloadedVolume(BaseModel):
     filename: str
     downloaded_at: datetime
     size_bytes: int = 0
+    source: str = "scan"  # "download" = from kmoe, "scan" = local association
 
 
 class LibraryEntry(BaseModel):

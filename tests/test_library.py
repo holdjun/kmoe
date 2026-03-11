@@ -9,6 +9,7 @@ from pathlib import Path
 
 from kmoe.library import (
     ScannedFile,
+    detect_title_from_directory,
     find_missing_vol_ids,
     list_archive_contents,
     match_files_to_volumes,
@@ -308,3 +309,53 @@ class TestFindMissingVolIds:
         vols = [_volume("1001", "Vol 01"), _volume("1002", "Vol 02")]
         entry = _entry()
         assert find_missing_vol_ids(entry, _detail(volumes=vols)) == ["1001", "1002"]
+
+
+# ---------------------------------------------------------------------------
+# detect_title_from_directory
+# ---------------------------------------------------------------------------
+
+
+class TestDetectTitleFromDirectory:
+    def test_title_id_pattern(self, tmp_path: Path) -> None:
+        """Given a directory named '{title}_{id}',
+        then the title portion is extracted."""
+        d = tmp_path / "夏日時光_55387"
+        d.mkdir()
+        assert detect_title_from_directory(d) == "夏日時光"
+
+    def test_hex_comic_id_pattern(self, tmp_path: Path) -> None:
+        """Given a directory named '{title}_{hex_id}',
+        then the title is extracted."""
+        d = tmp_path / "SAKAMOTO DAYS_425daf"
+        d.mkdir()
+        assert detect_title_from_directory(d) == "SAKAMOTO DAYS"
+
+    def test_kmoe_prefix_pattern(self, tmp_path: Path) -> None:
+        """Given a directory named '[Kmoe]{title}',
+        then the title is extracted."""
+        d = tmp_path / "[Kmoe]棋魂"
+        d.mkdir()
+        assert detect_title_from_directory(d) == "棋魂"
+
+    def test_mox_prefix_pattern(self, tmp_path: Path) -> None:
+        """Given a directory named '[Mox]{title}',
+        then the title is extracted."""
+        d = tmp_path / "[Mox]蠟筆小新"
+        d.mkdir()
+        assert detect_title_from_directory(d) == "蠟筆小新"
+
+    def test_extract_from_loose_files(self, tmp_path: Path) -> None:
+        """Given a plain-named directory containing [Kmoe] files,
+        then the comic title is extracted from filenames."""
+        d = tmp_path / "my_comics"
+        d.mkdir()
+        (d / "[Kmoe][進擊的巨人]卷 01.epub").write_bytes(b"x")
+        assert detect_title_from_directory(d) == "進擊的巨人"
+
+    def test_returns_none_for_empty_dir(self, tmp_path: Path) -> None:
+        """Given an empty directory with no recognizable pattern,
+        then None is returned."""
+        d = tmp_path / "random"
+        d.mkdir()
+        assert detect_title_from_directory(d) is None

@@ -269,6 +269,7 @@ class TestDownloadVolumeDedup:
             v for v in entry.downloaded_volumes if v.vol_id == "1001" and v.format == "epub"
         ]
         assert len(epub_records) == 1
+        assert epub_records[0].source == "download"
 
 
 # ---------------------------------------------------------------------------

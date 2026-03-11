@@ -41,3 +41,9 @@ def login_page_html() -> str:
 def home_page_html() -> str:
     """Read and return home_page.html fixture."""
     return (FIXTURES_DIR / "home_page.html").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def my_page_html() -> str:
+    """Read and return my_page.html fixture."""
+    return (FIXTURES_DIR / "my_page.html").read_text(encoding="utf-8")
