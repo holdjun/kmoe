@@ -294,7 +294,6 @@ def test_scan_untracked_directory(tmp_path: Path) -> None:
     assert (manga_dir / "library.json").exists()
 
 
-
 def test_scan_tracked_scan_entry(tmp_path: Path) -> None:
     """Scan rescans a tracked scan-only directory."""
     dl_dir = tmp_path / "library"
