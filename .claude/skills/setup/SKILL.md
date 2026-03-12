@@ -26,7 +26,7 @@ if [ -f .github/workflows/ci.yml ]; then
     "strict": true,
     "contexts": ["ci"]
   },
-  "enforce_admins": true,
+  "enforce_admins": false,
   "required_pull_request_reviews": null,
   "restrictions": null
 }
@@ -37,7 +37,7 @@ else
     --input - <<'EOF'
 {
   "required_status_checks": null,
-  "enforce_admins": true,
+  "enforce_admins": false,
   "required_pull_request_reviews": null,
   "restrictions": null
 }
@@ -84,7 +84,7 @@ Print what was configured:
 ```
 Setup complete:
   ✓ Repository: {owner}/{repo}
-  ✓ Branch protection: main (CI required, enforce admins)
+  ✓ Branch protection: main (CI required, admin can bypass for release PRs)
   ✓ Merge strategy: squash only, auto-delete branches
   ✓ Actions permissions: can create PRs (for Release Please)
 
