@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/holdjun/kmoe/compare/v0.1.3...v0.2.0) (2026-03-12)
+
+
+### Features
+
+* register --version flag on CLI app ([#17](https://github.com/holdjun/kmoe/issues/17)) ([c928d2a](https://github.com/holdjun/kmoe/commit/c928d2aa810de316d736451bbd8dea1a3d3281e9))
+
 ## [0.1.3](https://github.com/holdjun/kmoe/compare/v0.1.2...v0.1.3) (2026-03-12)
 
 

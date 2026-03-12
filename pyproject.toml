@@ -1,6 +1,6 @@
 [project]
 name = "kmoe"
-version = "0.1.3"
+version = "0.2.0"
 description = "Command-line manga downloader for kxx.moe / kzz.moe / koz.moe"
 readme = "README.md"
 license = "MIT"
