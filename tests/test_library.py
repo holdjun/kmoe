@@ -359,3 +359,26 @@ class TestDetectTitleFromDirectory:
         d = tmp_path / "random"
         d.mkdir()
         assert detect_title_from_directory(d) is None
+
+
+# ---------------------------------------------------------------------------
+# LibraryEntry defaults
+# ---------------------------------------------------------------------------
+
+
+class TestLibraryEntryDefaults:
+    def test_scan_only_entry_minimal_fields(self) -> None:
+        """LibraryEntry can be created with only a title for scan-only entries."""
+        entry = LibraryEntry(title="Test")
+        assert entry.book_id == ""
+        assert entry.comic_id == ""
+        assert entry.meta is None
+        assert entry.is_complete is None
+
+    def test_download_entry_still_works(self) -> None:
+        """Existing download-style LibraryEntry creation still works."""
+        meta = ComicMeta(book_id="123", title="Test")
+        entry = LibraryEntry(book_id="123", title="Test", meta=meta, is_complete=False)
+        assert entry.book_id == "123"
+        assert entry.meta is not None
+        assert entry.is_complete is False
