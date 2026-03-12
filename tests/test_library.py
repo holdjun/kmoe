@@ -5,10 +5,14 @@ from __future__ import annotations
 import tarfile
 import zipfile
 from datetime import datetime, timezone
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+import pytest
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from kmoe.library import (
-    ScannedFile,
     detect_title_from_directory,
     find_missing_vol_ids,
     is_scan_only_entry,
@@ -246,7 +250,6 @@ class TestScanBookFiles:
         assert names == {"Vol 01.epub", "Vol 02.epub"}
 
 
-
 # ---------------------------------------------------------------------------
 # find_missing_vol_ids
 # ---------------------------------------------------------------------------
@@ -403,6 +406,13 @@ class TestScanUntrackedDirectory:
         entry = scan_untracked_directory(d)
         assert entry.title == "夏日時光"
 
+    def test_raises_on_undetectable_title(self, tmp_path: Path) -> None:
+        """Given a directory with no recognizable files, raises ValueError."""
+        d = tmp_path / "empty_dir"
+        d.mkdir()
+        with pytest.raises(ValueError, match="Cannot detect title"):
+            scan_untracked_directory(d)
+
 
 # ---------------------------------------------------------------------------
 # rescan_scan_entry
@@ -431,6 +441,18 @@ class TestRescanScanEntry:
         updated = rescan_scan_entry(d, entry)
         assert len(updated.downloaded_volumes) == 1
 
+    def test_writes_library_json(self, tmp_path: Path) -> None:
+        """Rescan writes updated library.json to disk."""
+        d = tmp_path / "manga"
+        d.mkdir()
+        (d / "Vol 01.epub").write_bytes(b"x" * 100)
+        entry = scan_untracked_directory(d)
+        (d / "Vol 02.epub").write_bytes(b"y" * 200)
+        rescan_scan_entry(d, entry)
+        raw = (d / "library.json").read_text(encoding="utf-8")
+        reloaded = LibraryEntry.model_validate_json(raw)
+        assert len(reloaded.downloaded_volumes) == 2
+
 
 # ---------------------------------------------------------------------------
 # rescan_download_entry
@@ -443,31 +465,47 @@ class TestRescanDownloadEntry:
         d.mkdir()
         (d / "[Kmoe][Test]Vol 01.epub").write_bytes(b"x" * 1000)
         entry = LibraryEntry(
-            book_id="123", comic_id="abc123", title="Test",
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
             meta=ComicMeta(book_id="123", title="Test"),
-            downloaded_volumes=[DownloadedVolume(
-                vol_id="1001", title="Vol 01", format="epub",
-                filename="[Kmoe][Test]Vol 01.epub",
-                downloaded_at=datetime.now(timezone.utc),
-                size_bytes=1000, source="download",
-            )],
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="1001",
+                    title="Vol 01",
+                    format="epub",
+                    filename="[Kmoe][Test]Vol 01.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=1000,
+                    source="download",
+                )
+            ],
+            total_volumes=10,
         )
         updated = rescan_download_entry(d, entry)
         assert len(updated.downloaded_volumes) == 1
         assert updated.downloaded_volumes[0].source == "download"
+        assert updated.total_volumes == 10
 
     def test_removes_missing_file(self, tmp_path: Path) -> None:
         d = tmp_path / "Test_abc123"
         d.mkdir()
         entry = LibraryEntry(
-            book_id="123", comic_id="abc123", title="Test",
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
             meta=ComicMeta(book_id="123", title="Test"),
-            downloaded_volumes=[DownloadedVolume(
-                vol_id="1001", title="Vol 01", format="epub",
-                filename="[Kmoe][Test]Vol 01.epub",
-                downloaded_at=datetime.now(timezone.utc),
-                size_bytes=1000, source="download",
-            )],
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="1001",
+                    title="Vol 01",
+                    format="epub",
+                    filename="[Kmoe][Test]Vol 01.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=1000,
+                    source="download",
+                )
+            ],
         )
         updated = rescan_download_entry(d, entry)
         assert len(updated.downloaded_volumes) == 0
@@ -477,14 +515,21 @@ class TestRescanDownloadEntry:
         d.mkdir()
         (d / "[Kmoe][Test]Vol 01.epub").write_bytes(b"x" * 100)
         entry = LibraryEntry(
-            book_id="123", comic_id="abc123", title="Test",
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
             meta=ComicMeta(book_id="123", title="Test"),
-            downloaded_volumes=[DownloadedVolume(
-                vol_id="1001", title="Vol 01", format="epub",
-                filename="[Kmoe][Test]Vol 01.epub",
-                downloaded_at=datetime.now(timezone.utc),
-                size_bytes=1000, source="download",
-            )],
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="1001",
+                    title="Vol 01",
+                    format="epub",
+                    filename="[Kmoe][Test]Vol 01.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=1000,
+                    source="download",
+                )
+            ],
         )
         updated = rescan_download_entry(d, entry)
         assert len(updated.downloaded_volumes) == 0
@@ -495,17 +540,99 @@ class TestRescanDownloadEntry:
         (d / "[Kmoe][Test]Vol 01.epub").write_bytes(b"x" * 1000)
         (d / "[Kmoe][Test]Vol 02.epub").write_bytes(b"y" * 2000)
         entry = LibraryEntry(
-            book_id="123", comic_id="abc123", title="Test",
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
             meta=ComicMeta(book_id="123", title="Test"),
-            downloaded_volumes=[DownloadedVolume(
-                vol_id="1001", title="Vol 01", format="epub",
-                filename="[Kmoe][Test]Vol 01.epub",
-                downloaded_at=datetime.now(timezone.utc),
-                size_bytes=1000, source="download",
-            )],
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="1001",
+                    title="Vol 01",
+                    format="epub",
+                    filename="[Kmoe][Test]Vol 01.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=1000,
+                    source="download",
+                )
+            ],
         )
         updated = rescan_download_entry(d, entry)
         assert len(updated.downloaded_volumes) == 2
         sources = {v.filename: v.source for v in updated.downloaded_volumes}
         assert sources["[Kmoe][Test]Vol 01.epub"] == "download"
         assert sources["[Kmoe][Test]Vol 02.epub"] == "scan"
+
+    def test_keeps_scan_record_when_file_exists(self, tmp_path: Path) -> None:
+        """Given a scan-source record with file on disk, keeps the record."""
+        d = tmp_path / "Test_abc123"
+        d.mkdir()
+        (d / "local_vol.epub").write_bytes(b"x" * 500)
+        entry = LibraryEntry(
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
+            meta=ComicMeta(book_id="123", title="Test"),
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="",
+                    title="local vol",
+                    format="epub",
+                    filename="local_vol.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=500,
+                    source="scan",
+                )
+            ],
+        )
+        updated = rescan_download_entry(d, entry)
+        assert len(updated.downloaded_volumes) == 1
+        assert updated.downloaded_volumes[0].source == "scan"
+
+    def test_drops_scan_record_when_file_missing(self, tmp_path: Path) -> None:
+        """Given a scan-source record with no file on disk, drops the record."""
+        d = tmp_path / "Test_abc123"
+        d.mkdir()
+        entry = LibraryEntry(
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
+            meta=ComicMeta(book_id="123", title="Test"),
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="",
+                    title="local vol",
+                    format="epub",
+                    filename="local_vol.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=500,
+                    source="scan",
+                )
+            ],
+        )
+        updated = rescan_download_entry(d, entry)
+        assert len(updated.downloaded_volumes) == 0
+
+    def test_keeps_file_at_exactly_80_percent(self, tmp_path: Path) -> None:
+        """Given a file at exactly 80% of recorded size, keeps the record (< not <=)."""
+        d = tmp_path / "Test_abc123"
+        d.mkdir()
+        (d / "[Kmoe][Test]Vol 01.epub").write_bytes(b"x" * 800)  # exactly 80% of 1000
+        entry = LibraryEntry(
+            book_id="123",
+            comic_id="abc123",
+            title="Test",
+            meta=ComicMeta(book_id="123", title="Test"),
+            downloaded_volumes=[
+                DownloadedVolume(
+                    vol_id="1001",
+                    title="Vol 01",
+                    format="epub",
+                    filename="[Kmoe][Test]Vol 01.epub",
+                    downloaded_at=datetime.now(timezone.utc),
+                    size_bytes=1000,
+                    source="download",
+                )
+            ],
+        )
+        updated = rescan_download_entry(d, entry)
+        assert len(updated.downloaded_volumes) == 1

@@ -276,7 +276,7 @@ def test_update_all_up_to_date(
 
 
 # ---------------------------------------------------------------------------
-# scan (offline)
+# scan
 # ---------------------------------------------------------------------------
 
 
@@ -308,6 +308,82 @@ def test_scan_dry_run(tmp_path: Path) -> None:
     assert not (manga_dir / "library.json").exists()
 
 
+def test_scan_tracked_scan_entry(tmp_path: Path) -> None:
+    """Scan rescans a tracked scan-only directory."""
+    dl_dir = tmp_path / "library"
+    manga_dir = dl_dir / "my_manga"
+    manga_dir.mkdir(parents=True)
+    (manga_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 100)
+
+    # First scan to create library.json
+    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
+        runner.invoke(app, ["scan"])
+    assert (manga_dir / "library.json").exists()
+
+    # Add a file and rescan
+    (manga_dir / "[Kmoe][Test Comic]Vol 02.epub").write_bytes(b"y" * 200)
+    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
+        result = runner.invoke(app, ["scan"])
+    assert result.exit_code == 0
+    assert "Rescanned" in result.output
+    assert "2 volume" in result.output
+
+
+def test_scan_tracked_download_entry(tmp_path: Path) -> None:
+    """Scan validates a tracked download-source directory."""
+    dl_dir = tmp_path / "library"
+    manga_dir = dl_dir / "Test_abc123"
+    manga_dir.mkdir(parents=True)
+    (manga_dir / "[Kmoe][Test]Vol 01.epub").write_bytes(b"x" * 1000)
+
+    # Create a download-source library.json
+    entry = LibraryEntry(
+        book_id="123",
+        comic_id="abc123",
+        title="Test",
+        meta=ComicMeta(book_id="123", comic_id="abc123", title="Test"),
+        downloaded_volumes=[
+            DownloadedVolume(
+                vol_id="1001",
+                title="Vol 01",
+                format="epub",
+                filename="[Kmoe][Test]Vol 01.epub",
+                downloaded_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                size_bytes=1000,
+                source="download",
+            )
+        ],
+        total_volumes=5,
+    )
+    (manga_dir / "library.json").write_text(entry.model_dump_json(indent=2), encoding="utf-8")
+
+    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
+        result = runner.invoke(app, ["scan"])
+    assert result.exit_code == 0
+    assert "Validated" in result.output
+    assert "download:" in result.output
+
+
+# ---------------------------------------------------------------------------
+# update (skip scan-only)
+# ---------------------------------------------------------------------------
+
+
+@patch("kmoe.cli.get_or_create_config", return_value=_config())
+@patch("kmoe.cli.list_library")
+def test_update_skips_scan_only_entries(
+    mock_list: object,
+    _mock_config: object,
+) -> None:
+    """Update skips scan-only entries and shows message."""
+    mock_list.return_value = [
+        LibraryEntry(title="Local Comic", downloaded_volumes=[], total_volumes=3),
+    ]
+    result = runner.invoke(app, ["update", "--all"])
+    assert result.exit_code == 0
+    assert "No download-source entries" in result.output
+
+
 # ---------------------------------------------------------------------------
 # library (source column)
 # ---------------------------------------------------------------------------
@@ -323,11 +399,19 @@ def test_library_shows_source_column(
     meta = ComicMeta(book_id="123", comic_id="abc", title="Test")
     mock_list.return_value = [
         LibraryEntry(
-            book_id="123", comic_id="abc", title="Downloaded Comic", meta=meta,
-            downloaded_volumes=[], total_volumes=5, is_complete=False,
+            book_id="123",
+            comic_id="abc",
+            title="Downloaded Comic",
+            meta=meta,
+            downloaded_volumes=[],
+            total_volumes=5,
+            is_complete=False,
         ),
         LibraryEntry(
-            title="Local Comic", downloaded_volumes=[], total_volumes=3, is_complete=None,
+            title="Local Comic",
+            downloaded_volumes=[],
+            total_volumes=3,
+            is_complete=None,
         ),
     ]
     result = runner.invoke(app, ["library"])
