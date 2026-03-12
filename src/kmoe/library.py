@@ -417,7 +417,8 @@ def scan_untracked_directory(dir_path: Path) -> LibraryEntry:
     """
     files = scan_book_files(dir_path)
     title = detect_title_from_directory(dir_path)
-    assert title is not None  # caller guarantees
+    if title is None:
+        raise ValueError(f"Cannot detect title from directory: {dir_path}")
     downloaded = _build_scan_volumes(files)
     entry = LibraryEntry(
         title=title,
@@ -504,7 +505,7 @@ def rescan_download_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
         title=entry.title,
         meta=entry.meta,
         downloaded_volumes=kept,
-        total_volumes=len(kept),
+        total_volumes=entry.total_volumes,
         last_checked=datetime.now(timezone.utc),
         is_complete=entry.is_complete,
     )

@@ -870,7 +870,7 @@ def _scan(dry_run: bool) -> None:
                 updated = rescan_download_entry(dir_path, entry)
                 after = len(updated.downloaded_volumes)
                 console.print(f"  [green]Validated: {after} volume(s)[/green]")
-                removed = before - min(before, after)
+                removed = max(0, before - after)
                 if removed:
                     console.print(f"  [yellow]Removed {removed} invalid record(s)[/yellow]")
 
