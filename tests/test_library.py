@@ -13,7 +13,6 @@ from kmoe.library import (
     find_missing_vol_ids,
     is_scan_only_entry,
     list_archive_contents,
-    match_files_to_volumes,
     refresh_entry_from_detail,
     rescan_download_entry,
     rescan_scan_entry,
@@ -246,48 +245,6 @@ class TestScanBookFiles:
         names = {sf.name for sf in result}
         assert names == {"Vol 01.epub", "Vol 02.epub"}
 
-
-# ---------------------------------------------------------------------------
-# match_files_to_volumes (with ScannedFile)
-# ---------------------------------------------------------------------------
-
-
-class TestMatchFilesToVolumes:
-    def test_exact_match(self) -> None:
-        """ScannedFiles with matching vol titles are matched."""
-        files = [
-            ScannedFile(name="[Kmoe][Test Comic]Vol 01.epub", size=100, disk_path=Path("/a")),
-            ScannedFile(name="[Kmoe][Test Comic]Vol 02.epub", size=200, disk_path=Path("/b")),
-        ]
-        vols = [_volume("1001", "Vol 01"), _volume("1002", "Vol 02")]
-        result = match_files_to_volumes(files, vols)
-        assert len(result.matched) == 2
-        assert len(result.unmatched) == 0
-
-    def test_unmatched_files(self) -> None:
-        """Files that don't match any volume end up in unmatched."""
-        files = [
-            ScannedFile(name="random_file.epub", size=100, disk_path=Path("/a")),
-        ]
-        vols = [_volume("1001", "Vol 01")]
-        result = match_files_to_volumes(files, vols)
-        assert len(result.matched) == 0
-        assert len(result.unmatched) == 1
-
-    def test_archive_scanned_file(self) -> None:
-        """ScannedFiles from archives match correctly."""
-        files = [
-            ScannedFile(
-                name="[Kmoe][Test Comic]Vol 01.epub",
-                size=100,
-                disk_path=Path("/archive.zip"),
-                archive_path=Path("/archive.zip"),
-            ),
-        ]
-        vols = [_volume("1001", "Vol 01")]
-        result = match_files_to_volumes(files, vols)
-        assert len(result.matched) == 1
-        assert result.matched[0][0].archive_path is not None
 
 
 # ---------------------------------------------------------------------------

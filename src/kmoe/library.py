@@ -24,7 +24,6 @@ from kmoe.models import (
     ComicDetail,
     DownloadedVolume,
     LibraryEntry,
-    Volume,
 )
 from kmoe.utils import ensure_dir, sanitize_filename
 
@@ -178,7 +177,7 @@ def refresh_entry_from_detail(entry: LibraryEntry, detail: ComicDetail) -> Libra
 def find_missing_vol_ids(entry: LibraryEntry, detail: ComicDetail) -> list[str]:
     """Return vol_ids from remote that have no download record.
 
-    Disk validation (file existence, size) is :func:`rescan_entry`'s job.
+    Disk validation (file existence, size) is ``scan``'s job.
     This function only compares vol_id sets so that ``update`` stays fast.
     """
     downloaded_ids = {v.vol_id for v in entry.downloaded_volumes}
@@ -237,123 +236,6 @@ def extract_title_from_filename(filename: str) -> tuple[str, str] | None:
         return None
     return m.group(1), m.group(2)
 
-
-def _normalize_vol_title(title: str) -> str:
-    """Normalize a volume title for fuzzy matching.
-
-    Strips whitespace differences so "卷01" matches "卷 01".
-    """
-    return re.sub(r"\s+", "", title)
-
-
-def _extract_vol_title_from_filename(filename: str) -> str | None:
-    """Extract volume title from various filename formats.
-
-    Supports:
-    - [Kmoe][Title]Vol 01.epub -> Vol 01
-    - [Mox][Title]卷 01.epub -> 卷 01
-    - Title - Vol 01.epub -> Vol 01
-    - Title 卷01.epub -> 卷01
-    - Vol 01.epub -> Vol 01
-    """
-    # Remove extension
-    name = re.sub(
-        r"(?:\.kepub)?\.(?:epub|mobi|zip|tar(?:\.gz)?|tgz)$", "", filename, flags=re.IGNORECASE
-    )
-
-    # Pattern 1: [Kmoe|Mox][Title]VolTitle
-    m = re.match(r"^\[(?:Mox|Kmoe)\]\[[^\]]+\](.+)$", name)
-    if m:
-        return m.group(1)
-
-    # Pattern 2: Title - VolTitle (common separator patterns)
-    for sep in [" - ", " _ ", " — "]:
-        if sep in name:
-            return name.rsplit(sep, 1)[-1]
-
-    # Pattern 3: Just volume number/name patterns at the end
-    # e.g. "Some Title 卷01" -> "卷01"
-    m = re.search(
-        r"((?:卷|第|Vol\.?|Chapter|Ch\.?)\s*\d+(?:\s*\-\s*\d+)?(?:\s*\(.+?\))?)$",
-        name,
-        re.IGNORECASE,
-    )
-    if m:
-        return m.group(1)
-
-    return None
-
-
-@dataclass(frozen=True, slots=True)
-class MatchResult:
-    """Result of matching files to volumes."""
-
-    matched: list[tuple[ScannedFile, Volume]]
-    unmatched: list[ScannedFile]
-
-
-def match_files_to_volumes(
-    files: list[ScannedFile],
-    volumes: list[Volume],
-) -> MatchResult:
-    """Match local files to remote volume objects.
-
-    Uses multiple strategies for matching:
-    1. Exact normalized title match
-    2. Fuzzy match (one contains the other after normalization)
-
-    Returns a MatchResult with matched pairs and unmatched files.
-    """
-    # Build a lookup from normalized volume title -> Volume
-    vol_lookup: dict[str, Volume] = {}
-    for vol in volumes:
-        norm = _normalize_vol_title(vol.title)
-        vol_lookup[norm] = vol
-
-    matched: list[tuple[ScannedFile, Volume]] = []
-    unmatched: list[ScannedFile] = []
-    matched_vol_ids: set[str] = set()
-
-    for sf in files:
-        # Try [Kmoe][Title]VolTitle format first
-        info = extract_title_from_filename(sf.name)
-        if info is not None:
-            _comic_title, vol_title = info
-            norm = _normalize_vol_title(vol_title)
-            if norm in vol_lookup:
-                vol = vol_lookup[norm]
-                if vol.vol_id not in matched_vol_ids:
-                    matched.append((sf, vol))
-                    matched_vol_ids.add(vol.vol_id)
-                    continue
-
-        # Try broader extraction
-        vol_title = _extract_vol_title_from_filename(sf.name)
-        if vol_title:
-            norm = _normalize_vol_title(vol_title)
-
-            # Exact match
-            if norm in vol_lookup:
-                vol = vol_lookup[norm]
-                if vol.vol_id not in matched_vol_ids:
-                    matched.append((sf, vol))
-                    matched_vol_ids.add(vol.vol_id)
-                    continue
-
-            # Fuzzy match: check if vol_title contains or is contained by volume title
-            for vol_norm, vol in vol_lookup.items():
-                if vol.vol_id in matched_vol_ids:
-                    continue
-                if norm in vol_norm or vol_norm in norm:
-                    matched.append((sf, vol))
-                    matched_vol_ids.add(vol.vol_id)
-                    break
-            else:
-                unmatched.append(sf)
-        else:
-            unmatched.append(sf)
-
-    return MatchResult(matched=matched, unmatched=unmatched)
 
 
 # ---------------------------------------------------------------------------
@@ -493,102 +375,6 @@ def detect_title_from_directory(directory: Path) -> str | None:
 
     return None
 
-
-def _build_downloaded_volumes(
-    matched: list[tuple[ScannedFile, Volume]],
-    existing: list[DownloadedVolume] | None = None,
-) -> list[DownloadedVolume]:
-    """Convert matched file-volume pairs into download records.
-
-    When *existing* records are provided, preserves the ``source`` field for
-    volumes previously downloaded via kmoe.  Only kmoe-downloaded volumes
-    (``source="download"``) are subject to size validation; scan-associated
-    volumes are always accepted.
-    """
-    # Build lookup: (vol_id, format) -> source from existing records
-    source_lookup: dict[tuple[str, str], str] = {}
-    if existing:
-        for v in existing:
-            source_lookup[(v.vol_id, v.format)] = v.source
-
-    downloaded: list[DownloadedVolume] = []
-    for sf, vol in matched:
-        suffix = Path(sf.name).suffix.lower()
-        fmt = "mobi" if suffix == ".mobi" else "epub"
-
-        source = source_lookup.get((vol.vol_id, fmt), "scan")
-
-        # Only validate size for kmoe-downloaded volumes
-        if source == "download":
-            expected_mb = vol.size_epub_mb if fmt == "epub" else vol.size_mobi_mb
-            if expected_mb > 0 and sf.size < expected_mb * 1024 * 1024 * 0.8:
-                log.warning(
-                    "skipping small file",
-                    name=sf.name,
-                    size_bytes=sf.size,
-                    expected_mb=expected_mb,
-                )
-                continue
-
-        filename = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path is not None else sf.name
-        downloaded.append(
-            DownloadedVolume(
-                vol_id=vol.vol_id,
-                title=vol.title,
-                format=fmt,
-                filename=filename,
-                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
-                size_bytes=sf.size,
-                source=source,
-            )
-        )
-    return downloaded
-
-
-def import_directory(
-    config: AppConfig,
-    dir_path: Path,
-    comic_id: str,
-    detail: ComicDetail,
-) -> tuple[LibraryEntry, list[ScannedFile]]:
-    """Import an existing directory as a library entry.
-
-    Scans files (including inside ZIP/TAR archives), matches them to remote
-    volumes, creates a LibraryEntry, saves library.json, and renames the
-    directory to the canonical format.
-
-    Returns the created LibraryEntry and a list of unmatched files.
-    """
-    meta = detail.meta
-    title = meta.title
-
-    files = scan_book_files(dir_path)
-    match_result = match_files_to_volumes(files, detail.volumes)
-    # New import: no existing records, all volumes are scan-associated
-    downloaded = _build_downloaded_volumes(match_result.matched)
-
-    entry = refresh_entry_from_detail(
-        LibraryEntry(
-            book_id=meta.book_id,
-            comic_id=comic_id,
-            title=title,
-            meta=meta,
-            downloaded_volumes=downloaded,
-        ),
-        detail,
-    )
-
-    # Write library.json inside the existing directory first
-    lib_path = dir_path / "library.json"
-    lib_path.write_text(entry.model_dump_json(indent=2), encoding="utf-8")
-
-    # Rename directory to canonical format if needed
-    canonical_dir = get_comic_dir(config, comic_id, title)
-    if dir_path != canonical_dir and not canonical_dir.exists():
-        dir_path.rename(canonical_dir)
-        log.info("renamed directory", old=dir_path.name, new=canonical_dir.name)
-
-    return entry, match_result.unmatched
 
 
 # ---------------------------------------------------------------------------
@@ -738,35 +524,3 @@ def rescan_download_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
     return updated
 
 
-def rescan_entry(
-    config: AppConfig,
-    dir_path: Path,
-    entry: LibraryEntry,
-    detail: ComicDetail,
-) -> tuple[LibraryEntry, list[ScannedFile]]:
-    """Re-scan an already-tracked directory and rebuild its library entry.
-
-    Unlike :func:`import_directory`, this skips the search step and does not
-    rename the directory.  It re-scans disk files, re-matches them to remote
-    volumes, and replaces ``downloaded_volumes`` with the match results.
-
-    Returns the updated entry and a list of unmatched files.
-    """
-    files = scan_book_files(dir_path)
-    match_result = match_files_to_volumes(files, detail.volumes)
-    # Preserve source from existing records so kmoe downloads keep size validation
-    downloaded = _build_downloaded_volumes(match_result.matched, entry.downloaded_volumes)
-
-    updated = refresh_entry_from_detail(
-        LibraryEntry(
-            book_id=entry.book_id,
-            comic_id=entry.comic_id or detail.meta.comic_id,
-            title=detail.meta.title,
-            meta=entry.meta,
-            downloaded_volumes=downloaded,
-        ),
-        detail,
-    )
-
-    save_entry(config, updated)
-    return updated, match_result.unmatched
