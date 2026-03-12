@@ -18,7 +18,7 @@ kxx.moe / kzz.moe / koz.moe 漫画站点的命令行下载工具。
 通过 Skill 安装（AI 代你操作，推荐）：
 
 ```bash
-npx skills install hj/kmoe --skill kmoe
+npx skills install holdjun/kmoe --skill kmoe
 ```
 
 手动安装（需要 Python 3.10+）：

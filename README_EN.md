@@ -18,7 +18,7 @@ A command-line manga downloader for kxx.moe / kzz.moe / koz.moe.
 Via Skill (AI operates on your behalf, recommended):
 
 ```bash
-npx skills install hj/kmoe --skill kmoe
+npx skills install holdjun/kmoe --skill kmoe
 ```
 
 Manual install (requires Python 3.10+):
