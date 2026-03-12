@@ -11,11 +11,25 @@ CLI tool for downloading manga from kxx.moe / kzz.moe / koz.moe in EPUB or MOBI 
 
 kmoe must be installed and the user must be logged in.
 
-- Install: `pip install kmoe` or `uv tool install kmoe`
-- Login: `kmoe login -u <email>` — **interactive, the user must run this themselves** (prompts for password, download directory, format preference, language, worker count)
-- Check status: `kmoe status`
+**First, check if kmoe is installed:**
 
-If the user hasn't logged in or their session expired, tell them to run `kmoe login` first. Do not attempt to automate login.
+```bash
+kmoe --version
+```
+
+If not installed, install it for the user:
+
+```bash
+pip install kmoe
+```
+
+**Then check login status:**
+
+```bash
+kmoe status
+```
+
+If not logged in or session expired, tell the user to run `kmoe login -u <email>` themselves — **login is interactive** (prompts for password, download directory, format preference, language, worker count). Do not attempt to automate login.
 
 ## Commands Reference
 
@@ -53,7 +67,7 @@ Files go to `{download_dir}/{title}_{book_id}/`. Shows progress bars, transfer s
 kmoe library
 ```
 
-Shows all comics in the local library with download progress and completion status.
+Shows all comics in the local library with download progress, completion status, and source (download or scan).
 
 ### update — Fetch new volumes
 
@@ -64,24 +78,18 @@ kmoe update --all --dry-run        # Preview only
 kmoe update --all -y               # Skip confirmation
 ```
 
-Compares local library against remote, shows what's new, and downloads missing volumes.
+Compares local library against remote, shows what's new, and downloads missing volumes. **Only affects download-source entries** — scan-only (local) entries are skipped.
 
-### scan — Import existing files
-
-```bash
-kmoe scan                          # Auto-detect all directories
-kmoe scan --dry-run                # Preview without changes
-```
-
-Walks the download directory, matches local manga files to remote comic data by title, and creates `library.json` metadata. Use this to bring an existing collection under kmoe management.
-
-### link — Manual import
+### scan — Maintain local library
 
 ```bash
-kmoe link /path/to/manga <comic_id>
+kmoe scan                          # Scan all directories
 ```
 
-When scan can't auto-detect a comic, manually associate a directory with a comic ID.
+Purely local (no network). Walks the download directory and maintains `library.json` metadata:
+- **Untracked directories** (no library.json): scans files, creates library.json with `source="scan"`. No online matching or directory renaming.
+- **Scan-source entries**: rescans files on disk, updates records (picks up added/removed files).
+- **Download-source entries**: validates file integrity (removes records for missing or undersized files). Run `update` afterward to re-download removed volumes.
 
 ## Common Workflows
 
@@ -97,7 +105,7 @@ When scan can't auto-detect a comic, manually associate a directory with a comic
 
 **Import an existing collection:**
 
-`kmoe scan` — auto-matches titles to remote data
+`kmoe scan` — scans local files and creates library.json (offline, no online matching)
 
 **Check quota before a big download:**
 
@@ -109,5 +117,6 @@ When scan can't auto-detect a comic, manually associate a directory with a comic
 - **Formats**: EPUB (default) or MOBI. Set globally in config or per-download with `-f`.
 - **Mirrors**: Automatically fails over between kxx.moe, kzz.moe, koz.moe.
 - **Config file**: `~/.config/kmoe/config.toml` — can be edited directly.
+- **Two source types**: `download` (from kmoe, has online ID, supports `update`) and `scan` (local-only, no online link).
 - **All commands except `login` are non-interactive** and safe to run via shell.
 - Add `-v` to any command for debug logging.

@@ -96,14 +96,14 @@ class DownloadedVolume(BaseModel):
 class LibraryEntry(BaseModel):
     """A comic tracked in the user's local library."""
 
-    book_id: str
+    book_id: str = ""
     comic_id: str = ""
     title: str
-    meta: ComicMeta
+    meta: ComicMeta | None = None
     downloaded_volumes: list[DownloadedVolume] = []
     total_volumes: int = 0
     last_checked: datetime | None = None
-    is_complete: bool = False
+    is_complete: bool | None = None
 
 
 # ---------------------------------------------------------------------------
