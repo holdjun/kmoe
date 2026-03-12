@@ -294,19 +294,6 @@ def test_scan_untracked_directory(tmp_path: Path) -> None:
     assert (manga_dir / "library.json").exists()
 
 
-def test_scan_dry_run(tmp_path: Path) -> None:
-    """Scan --dry-run shows info but doesn't create files."""
-    dl_dir = tmp_path / "library"
-    manga_dir = dl_dir / "my_manga"
-    manga_dir.mkdir(parents=True)
-    (manga_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 100)
-
-    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
-        result = runner.invoke(app, ["scan", "--dry-run"])
-    assert result.exit_code == 0
-    assert "Dry run" in result.output
-    assert not (manga_dir / "library.json").exists()
-
 
 def test_scan_tracked_scan_entry(tmp_path: Path) -> None:
     """Scan rescans a tracked scan-only directory."""

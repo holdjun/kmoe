@@ -11,11 +11,25 @@ CLI tool for downloading manga from kxx.moe / kzz.moe / koz.moe in EPUB or MOBI 
 
 kmoe must be installed and the user must be logged in.
 
-- Install: `pip install kmoe` or `uv tool install kmoe`
-- Login: `kmoe login -u <email>` — **interactive, the user must run this themselves** (prompts for password, download directory, format preference, language, worker count)
-- Check status: `kmoe status`
+**First, check if kmoe is installed:**
 
-If the user hasn't logged in or their session expired, tell them to run `kmoe login` first. Do not attempt to automate login.
+```bash
+kmoe --version
+```
+
+If not installed, install it for the user:
+
+```bash
+pip install kmoe
+```
+
+**Then check login status:**
+
+```bash
+kmoe status
+```
+
+If not logged in or session expired, tell the user to run `kmoe login -u <email>` themselves — **login is interactive** (prompts for password, download directory, format preference, language, worker count). Do not attempt to automate login.
 
 ## Commands Reference
 
@@ -70,7 +84,6 @@ Compares local library against remote, shows what's new, and downloads missing v
 
 ```bash
 kmoe scan                          # Scan all directories
-kmoe scan --dry-run                # Preview without changes
 ```
 
 Purely local (no network). Walks the download directory and maintains `library.json` metadata:

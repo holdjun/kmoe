@@ -1,3 +1,8 @@
+---
+name: setup
+description: Configure GitHub repository settings — branch protection, merge strategy, and Actions permissions. Use this skill when the user wants to set up a new repo, configure branch protection rules, change merge settings, or enable GitHub Actions permissions. Idempotent and safe to re-run. Trigger on mentions of repo setup, branch protection, merge configuration, or GitHub repository settings.
+---
+
 # Setup
 
 Configure GitHub repository settings. Idempotent — safe to re-run.

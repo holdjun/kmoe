@@ -10,18 +10,24 @@ kxx.moe / kzz.moe / koz.moe 漫画站点的命令行下载工具。
 - 搜索漫画，支持语言筛选
 - 查看漫画详情和卷列表
 - 下载漫画（MOBI / EPUB），支持并发下载
-- 本地库管理：查看、导入、关联、更新
+- 本地库管理：查看、扫描、更新
 - 多镜像自动故障转移
 
 ## 安装
 
-需要 Python 3.10+。
+通过 Skill 安装（AI 代你操作，推荐）：
+
+```bash
+npx skills install hj/kmoe --skill kmoe
+```
+
+手动安装（需要 Python 3.10+）：
 
 ```bash
 pip install kmoe
 ```
 
-或从源码安装：
+从源码安装：
 
 ```bash
 git clone https://github.com/holdjun/kmoe.git
@@ -75,12 +81,13 @@ kmoe download 18488 -f epub            # 指定格式
 ### 本地库
 
 ```bash
-kmoe library                           # 查看已下载
+kmoe library                           # 查看本地库（含下载和本地扫描来源）
+kmoe scan                              # 扫描本地文件，维护 library.json
 kmoe update 18488                      # 更新漫画（下载新卷）
-kmoe scan --dry-run                    # 预览导入
-kmoe scan                              # 导入已有目录
-kmoe link /path/to/manga 12345         # 手动关联
+kmoe update --all                      # 更新所有已下载漫画
 ```
+
+`scan` 纯本地运行，不联网。`update` 仅作用于通过 kmoe 下载的漫画。
 
 ## 配置
 
@@ -88,15 +95,6 @@ kmoe link /path/to/manga 12345         # 手动关联
 
 可配置项：下载目录、默认格式、首选镜像、并发数等。
 
-## AI 辅助使用
-
-本项目内置 Claude Code Skill（`.claude/skills/kmoe/`），可以让 AI 代你操作 kmoe：搜索漫画、下载、管理库。
-
-在 Claude Code 中打开 kmoe 项目目录即可自动生效。如需全局使用：
-
-```bash
-ln -s /path/to/kmoe/.claude/skills/kmoe ~/.claude/skills/kmoe
-```
 
 ## License
 

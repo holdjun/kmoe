@@ -10,18 +10,24 @@ A command-line manga downloader for kxx.moe / kzz.moe / koz.moe.
 - Search manga with language filtering
 - View comic details and volume listings
 - Download manga (MOBI / EPUB) with concurrent downloads
-- Local library management: list, import, link, update
+- Local library management: list, scan, update
 - Automatic mirror failover
 
 ## Installation
 
-Requires Python 3.10+.
+Via Skill (AI operates on your behalf, recommended):
+
+```bash
+npx skills install hj/kmoe --skill kmoe
+```
+
+Manual install (requires Python 3.10+):
 
 ```bash
 pip install kmoe
 ```
 
-Or install from source:
+From source:
 
 ```bash
 git clone https://github.com/holdjun/kmoe.git
@@ -75,12 +81,13 @@ kmoe download 18488 -f epub            # Specify format
 ### Local Library
 
 ```bash
-kmoe library                           # List downloaded comics
+kmoe library                           # List all comics (downloaded and locally scanned)
+kmoe scan                              # Scan local files, maintain library.json
 kmoe update 18488                      # Update comic (download new volumes)
-kmoe scan --dry-run                    # Preview import
-kmoe scan                              # Import existing directories
-kmoe link /path/to/manga 12345         # Manually link directory to comic
+kmoe update --all                      # Update all downloaded comics
 ```
+
+`scan` runs purely offline (no network). `update` only applies to comics downloaded via kmoe.
 
 ## Configuration
 
@@ -88,15 +95,6 @@ Config file: `~/.config/kmoe/config.toml`, created automatically on first login.
 
 Configurable: download directory, default format, preferred mirror, concurrency, etc.
 
-## AI-Assisted Usage
-
-This project includes a Claude Code Skill (`.claude/skills/kmoe/`) that lets AI search, download, and manage your manga library on your behalf.
-
-It activates automatically when you open the kmoe project in Claude Code. For global access:
-
-```bash
-ln -s /path/to/kmoe/.claude/skills/kmoe ~/.claude/skills/kmoe
-```
 
 ## License
 

@@ -32,7 +32,6 @@ from kmoe.library import (
     rescan_download_entry,
     rescan_scan_entry,
     save_entry,
-    scan_book_files,
     scan_untracked_directory,
 )
 from kmoe.models import AppConfig, ComicDetail, LibraryEntry, UserStatus
@@ -793,16 +792,13 @@ async def _update(
 @app.command()
 def scan(
     *,
-    dry_run: Annotated[
-        bool, typer.Option("--dry-run", help="Preview changes without modifying anything.")
-    ] = False,
     verbose: _VerboseAnnotation = False,  # noqa: ARG001
 ) -> None:
     """Scan download directory and maintain local library metadata."""
-    _scan(dry_run)
+    _scan()
 
 
-def _scan(dry_run: bool) -> None:
+def _scan() -> None:
     config = get_or_create_config()
     dl_dir = config.download_dir
 
@@ -847,44 +843,25 @@ def _scan(dry_run: bool) -> None:
     for dir_path, entry in tracked:
         if is_scan_only_entry(entry):
             console.print(f"[bold]{dir_path.name}[/bold] (scan)")
-            if dry_run:
-                files = scan_book_files(dir_path)
-                console.print(
-                    f"  Files: {len(files)}, Current records: {len(entry.downloaded_volumes)}"
-                )
-            else:
-                updated = rescan_scan_entry(dir_path, entry)
-                console.print(
-                    f"  [green]Rescanned: {len(updated.downloaded_volumes)} volume(s)[/green]"
-                )
+            updated = rescan_scan_entry(dir_path, entry)
+            console.print(
+                f"  [green]Rescanned: {len(updated.downloaded_volumes)} volume(s)[/green]"
+            )
         else:
             cid = entry.comic_id or entry.book_id
             console.print(f"[bold]{dir_path.name}[/bold] (download: {cid})")
-            if dry_run:
-                files = scan_book_files(dir_path)
-                console.print(
-                    f"  Files on disk: {len(files)}, Recorded: {len(entry.downloaded_volumes)}"
-                )
-            else:
-                before = len(entry.downloaded_volumes)
-                updated = rescan_download_entry(dir_path, entry)
-                after = len(updated.downloaded_volumes)
-                console.print(f"  [green]Validated: {after} volume(s)[/green]")
-                removed = max(0, before - after)
-                if removed:
-                    console.print(f"  [yellow]Removed {removed} invalid record(s)[/yellow]")
+            before = len(entry.downloaded_volumes)
+            updated = rescan_download_entry(dir_path, entry)
+            after = len(updated.downloaded_volumes)
+            console.print(f"  [green]Validated: {after} volume(s)[/green]")
+            removed = max(0, before - after)
+            if removed:
+                console.print(f"  [yellow]Removed {removed} invalid record(s)[/yellow]")
 
     # --- Untracked directories ---
     for dir_path, title in untracked:
         console.print(f"[bold]{dir_path.name}[/bold] -> [cyan]{title}[/cyan]")
-        if dry_run:
-            files = scan_book_files(dir_path)
-            console.print(f"  Would create library.json with {len(files)} file(s)")
-        else:
-            entry = scan_untracked_directory(dir_path)
-            console.print(f"  [green]Created: {len(entry.downloaded_volumes)} volume(s)[/green]")
+        entry = scan_untracked_directory(dir_path)
+        console.print(f"  [green]Created: {len(entry.downloaded_volumes)} volume(s)[/green]")
 
-    if dry_run:
-        console.print("\n[yellow]Dry run complete. No changes made.[/yellow]")
-    else:
-        console.print("\n[green]Scan complete.[/green]")
+    console.print("\n[green]Scan complete.[/green]")
