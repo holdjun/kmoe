@@ -237,7 +237,6 @@ def extract_title_from_filename(filename: str) -> tuple[str, str] | None:
     return m.group(1), m.group(2)
 
 
-
 # ---------------------------------------------------------------------------
 # Directory import
 # ---------------------------------------------------------------------------
@@ -376,7 +375,6 @@ def detect_title_from_directory(directory: Path) -> str | None:
     return None
 
 
-
 # ---------------------------------------------------------------------------
 # Scan-only helpers
 # ---------------------------------------------------------------------------
@@ -402,9 +400,7 @@ def _build_scan_volumes(files: list[ScannedFile]) -> list[DownloadedVolume]:
                 title=title,
                 format=fmt,
                 filename=filename,
-                downloaded_at=datetime.fromtimestamp(
-                    sf.disk_path.stat().st_mtime, tz=timezone.utc
-                ),
+                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
                 size_bytes=sf.size,
                 source="scan",
             )
@@ -429,9 +425,7 @@ def scan_untracked_directory(dir_path: Path) -> LibraryEntry:
         total_volumes=len(downloaded),
         last_checked=datetime.now(timezone.utc),
     )
-    (dir_path / "library.json").write_text(
-        entry.model_dump_json(indent=2), encoding="utf-8"
-    )
+    (dir_path / "library.json").write_text(entry.model_dump_json(indent=2), encoding="utf-8")
     return entry
 
 
@@ -452,9 +446,7 @@ def rescan_scan_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
         last_checked=datetime.now(timezone.utc),
         is_complete=entry.is_complete,
     )
-    (dir_path / "library.json").write_text(
-        updated.model_dump_json(indent=2), encoding="utf-8"
-    )
+    (dir_path / "library.json").write_text(updated.model_dump_json(indent=2), encoding="utf-8")
     return updated
 
 
@@ -500,9 +492,7 @@ def rescan_download_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
                 title=title,
                 format=fmt,
                 filename=filename,
-                downloaded_at=datetime.fromtimestamp(
-                    sf.disk_path.stat().st_mtime, tz=timezone.utc
-                ),
+                downloaded_at=datetime.fromtimestamp(sf.disk_path.stat().st_mtime, tz=timezone.utc),
                 size_bytes=sf.size,
                 source="scan",
             )
@@ -518,9 +508,5 @@ def rescan_download_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
         last_checked=datetime.now(timezone.utc),
         is_complete=entry.is_complete,
     )
-    (dir_path / "library.json").write_text(
-        updated.model_dump_json(indent=2), encoding="utf-8"
-    )
+    (dir_path / "library.json").write_text(updated.model_dump_json(indent=2), encoding="utf-8")
     return updated
-
-

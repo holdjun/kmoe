@@ -273,3 +273,66 @@ def test_update_all_up_to_date(
     result = runner.invoke(app, ["update", "--all", "--dry-run"])
     assert result.exit_code == 0
     assert "up to date" in result.output.lower()
+
+
+# ---------------------------------------------------------------------------
+# scan (offline)
+# ---------------------------------------------------------------------------
+
+
+def test_scan_untracked_directory(tmp_path: Path) -> None:
+    """Scan creates library.json for untracked directories."""
+    dl_dir = tmp_path / "library"
+    manga_dir = dl_dir / "my_manga"
+    manga_dir.mkdir(parents=True)
+    (manga_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 100)
+
+    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
+        result = runner.invoke(app, ["scan"])
+    assert result.exit_code == 0
+    assert "Created" in result.output
+    assert (manga_dir / "library.json").exists()
+
+
+def test_scan_dry_run(tmp_path: Path) -> None:
+    """Scan --dry-run shows info but doesn't create files."""
+    dl_dir = tmp_path / "library"
+    manga_dir = dl_dir / "my_manga"
+    manga_dir.mkdir(parents=True)
+    (manga_dir / "[Kmoe][Test Comic]Vol 01.epub").write_bytes(b"x" * 100)
+
+    with patch("kmoe.cli.get_or_create_config", return_value=AppConfig(download_dir=dl_dir)):
+        result = runner.invoke(app, ["scan", "--dry-run"])
+    assert result.exit_code == 0
+    assert "Dry run" in result.output
+    assert not (manga_dir / "library.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# library (source column)
+# ---------------------------------------------------------------------------
+
+
+@patch("kmoe.cli.get_or_create_config", return_value=_config())
+@patch("kmoe.cli.list_library")
+def test_library_shows_source_column(
+    mock_list: object,
+    _mock_config: object,
+) -> None:
+    """Library command displays Source column with download and scan entries."""
+    meta = ComicMeta(book_id="123", comic_id="abc", title="Test")
+    mock_list.return_value = [
+        LibraryEntry(
+            book_id="123", comic_id="abc", title="Downloaded Comic", meta=meta,
+            downloaded_volumes=[], total_volumes=5, is_complete=False,
+        ),
+        LibraryEntry(
+            title="Local Comic", downloaded_volumes=[], total_volumes=3, is_complete=None,
+        ),
+    ]
+    result = runner.invoke(app, ["library"])
+    assert result.exit_code == 0
+    assert "Source" in result.output
+    assert "download" in result.output
+    assert "scan" in result.output
+    assert "N/A" in result.output
