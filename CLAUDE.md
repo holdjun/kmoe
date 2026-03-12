@@ -47,7 +47,7 @@ docs/               技术文档、架构设计
 ## Key Rules
 
 1. **不要直接提交到 `main`** — 所有变更走 feature branch + PR
-2. **始终使用 `/submit` 提交 PR** — 不要手动 `git push` + `gh pr create`
+2. **始终使用 `/submit` 提交 PR** — 禁止手动执行 `git push`、`gh pr create` 等 git/GitHub 操作来提交代码。所有提交必须通过 `/submit` skill 完成，除非用户明确要求手动操作
 3. **不要提交 secrets** — 无 `.env`、API keys、session 文件
 4. **不要在生产代码留 debug 输出** — 提交前清理 debug 语句
 5. **每个功能必须包含测试** — 只测公开接口，测试文件一对一映射源文件（`test_parser.py` ↔ `parser.py`）。测试应守护真实行为，不为覆盖率而存在
