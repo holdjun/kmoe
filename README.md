@@ -24,6 +24,8 @@ npx skills install holdjun/kmoe --skill kmoe
 手动安装（需要 Python 3.10+）：
 
 ```bash
+uv tool install kmoe
+# 或
 pip install kmoe
 ```
 
@@ -32,13 +34,6 @@ pip install kmoe
 ```bash
 git clone https://github.com/holdjun/kmoe.git
 cd kmoe
-pip install .
-```
-
-开发模式：
-
-```bash
-pip install uv
 uv sync
 ```
 
