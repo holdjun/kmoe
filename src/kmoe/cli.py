@@ -63,6 +63,16 @@ app = typer.Typer(
 )
 
 
+@app.callback()
+def _main(
+    _version: Annotated[
+        Optional[bool],  # noqa: UP045
+        typer.Option("--version", callback=_version_callback, is_eager=True),
+    ] = None,
+) -> None:
+    """Kmoe manga downloader CLI."""
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
