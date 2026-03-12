@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/holdjun/kmoe/compare/v0.2.0...v0.2.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* chain publish job into release-please workflow ([#19](https://github.com/holdjun/kmoe/issues/19)) ([2e87ee3](https://github.com/holdjun/kmoe/commit/2e87ee3e2850421367177a7d05083cfe82a11489))
+
 ## [0.2.0](https://github.com/holdjun/kmoe/compare/v0.1.3...v0.2.0) (2026-03-12)
 
 
