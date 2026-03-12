@@ -591,6 +591,153 @@ def import_directory(
     return entry, match_result.unmatched
 
 
+# ---------------------------------------------------------------------------
+# Scan-only helpers
+# ---------------------------------------------------------------------------
+
+
+def is_scan_only_entry(entry: LibraryEntry) -> bool:
+    """Return True when the entry has no online IDs (local-only)."""
+    return not entry.comic_id and not entry.book_id
+
+
+def _build_scan_volumes(files: list[ScannedFile]) -> list[DownloadedVolume]:
+    """Convert scanned files into download records with ``source="scan"``."""
+    volumes: list[DownloadedVolume] = []
+    for sf in files:
+        info = extract_title_from_filename(sf.name)
+        title = info[1] if info else Path(sf.name).stem
+        suffix = Path(sf.name).suffix.lower()
+        fmt = "mobi" if suffix == ".mobi" else "epub"
+        filename = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path else sf.name
+        volumes.append(
+            DownloadedVolume(
+                vol_id="",
+                title=title,
+                format=fmt,
+                filename=filename,
+                downloaded_at=datetime.fromtimestamp(
+                    sf.disk_path.stat().st_mtime, tz=timezone.utc
+                ),
+                size_bytes=sf.size,
+                source="scan",
+            )
+        )
+    return volumes
+
+
+def scan_untracked_directory(dir_path: Path) -> LibraryEntry:
+    """Create a library entry for a directory with no ``library.json``.
+
+    Scans disk files and writes ``library.json`` directly to *dir_path*.
+    Does **not** rename the directory or contact the remote server.
+    The caller must ensure ``detect_title_from_directory`` returns non-None.
+    """
+    files = scan_book_files(dir_path)
+    title = detect_title_from_directory(dir_path)
+    assert title is not None  # caller guarantees
+    downloaded = _build_scan_volumes(files)
+    entry = LibraryEntry(
+        title=title,
+        downloaded_volumes=downloaded,
+        total_volumes=len(downloaded),
+        last_checked=datetime.now(timezone.utc),
+    )
+    (dir_path / "library.json").write_text(
+        entry.model_dump_json(indent=2), encoding="utf-8"
+    )
+    return entry
+
+
+def rescan_scan_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
+    """Re-scan a scan-only directory and rebuild its library entry.
+
+    Preserves the existing title; rebuilds downloaded_volumes from disk.
+    """
+    files = scan_book_files(dir_path)
+    downloaded = _build_scan_volumes(files)
+    updated = LibraryEntry(
+        book_id=entry.book_id,
+        comic_id=entry.comic_id,
+        title=entry.title,
+        meta=entry.meta,
+        downloaded_volumes=downloaded,
+        total_volumes=len(downloaded),
+        last_checked=datetime.now(timezone.utc),
+        is_complete=entry.is_complete,
+    )
+    (dir_path / "library.json").write_text(
+        updated.model_dump_json(indent=2), encoding="utf-8"
+    )
+    return updated
+
+
+def rescan_download_entry(dir_path: Path, entry: LibraryEntry) -> LibraryEntry:
+    """Re-scan a download-tracked directory and reconcile with disk.
+
+    For ``source="download"`` records: keeps only if the file exists on disk
+    and is at least 80% of the recorded size.  For ``source="scan"`` records:
+    keeps only if the file exists.  New unrecorded files are added with
+    ``source="scan"``.
+    """
+    files = scan_book_files(dir_path)
+
+    # Build filename -> ScannedFile lookup
+    disk_lookup: dict[str, ScannedFile] = {}
+    for sf in files:
+        key = f"{sf.archive_path.name}/{sf.name}" if sf.archive_path else sf.name
+        disk_lookup[key] = sf
+
+    # Reconcile existing records
+    kept: list[DownloadedVolume] = []
+    matched_filenames: set[str] = set()
+    for dv in entry.downloaded_volumes:
+        sf = disk_lookup.get(dv.filename)
+        if sf is None:
+            continue
+        matched_filenames.add(dv.filename)
+        if dv.source == "download" and sf.size < 0.8 * dv.size_bytes:
+            continue
+        kept.append(dv)
+
+    # Add new unrecorded files
+    for filename, sf in disk_lookup.items():
+        if filename in matched_filenames:
+            continue
+        info = extract_title_from_filename(sf.name)
+        title = info[1] if info else Path(sf.name).stem
+        suffix = Path(sf.name).suffix.lower()
+        fmt = "mobi" if suffix == ".mobi" else "epub"
+        kept.append(
+            DownloadedVolume(
+                vol_id="",
+                title=title,
+                format=fmt,
+                filename=filename,
+                downloaded_at=datetime.fromtimestamp(
+                    sf.disk_path.stat().st_mtime, tz=timezone.utc
+                ),
+                size_bytes=sf.size,
+                source="scan",
+            )
+        )
+
+    updated = LibraryEntry(
+        book_id=entry.book_id,
+        comic_id=entry.comic_id,
+        title=entry.title,
+        meta=entry.meta,
+        downloaded_volumes=kept,
+        total_volumes=len(kept),
+        last_checked=datetime.now(timezone.utc),
+        is_complete=entry.is_complete,
+    )
+    (dir_path / "library.json").write_text(
+        updated.model_dump_json(indent=2), encoding="utf-8"
+    )
+    return updated
+
+
 def rescan_entry(
     config: AppConfig,
     dir_path: Path,
