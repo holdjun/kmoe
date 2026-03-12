@@ -48,7 +48,7 @@ parser → models
 搜索结果：`comic_id`, `title`, `authors`, `score`, `status`, `language`
 
 ### LibraryEntry
-本地库条目：`book_id`, `title`, `meta`, `downloaded_volumes`, `last_checked`, `is_complete`
+本地库条目：`book_id`（可为空）, `title`, `meta`（可为 null）, `downloaded_volumes`, `last_checked`, `is_complete`（三态：true/false/null=未知）
 
 ### DownloadedVolume
 下载记录：`vol_id`, `title`, `format`, `filename`, `downloaded_at`, `size_bytes`, `source`
@@ -134,7 +134,9 @@ GET /getdownurl.php?b={book_id}&v={vol_id}&mobi={fmt}&vip={line}&json=1
 
 ### library.json
 
-每个漫画目录下唯一的元数据文件，无根索引。格式：
+每个漫画目录下唯一的元数据文件，无根索引。根据来源分两种格式：
+
+download 来源（有线上 ID 和元数据）：
 
 ```json
 {
@@ -159,20 +161,45 @@ GET /getdownurl.php?b={book_id}&v={vol_id}&mobi={fmt}&vip={line}&json=1
 }
 ```
 
+scan 来源（纯本地，无线上信息）：
+
+```json
+{
+  "book_id": "",
+  "comic_id": "",
+  "title": "夏日時光",
+  "meta": null,
+  "downloaded_volumes": [
+    {
+      "vol_id": "",
+      "title": "卷 01",
+      "format": "epub",
+      "filename": "[Kmoe][夏日時光]卷 01.epub",
+      "downloaded_at": "2026-02-12T06:41:01Z",
+      "size_bytes": 151703850,
+      "source": "scan"
+    }
+  ],
+  "total_volumes": 1,
+  "last_checked": "2026-02-13T09:34:23Z",
+  "is_complete": null
+}
+```
+
 归档内文件的 `filename` 格式为 `archive.zip/file.epub`。
 
 ### 各命令与 library.json 的关系
 
-| 命令 | 写 library.json | 校验体积 | 说明 |
-|------|:-:|:-:|------|
-| `download` | 是 | 否 | 下载成功后新增/更新记录 |
-| `scan` | 是（覆盖） | 仅 download 源 | 扫描磁盘文件 + 远端详情，重建整个 library.json |
-| `link` | 是（覆盖） | 否 | 同 scan，但 comic_id 手动指定（首次导入无旧记录） |
-| `update` | 间接 | 否 | 比对 library.json vs 远端 vol_ids，缺失的调 download |
-| `library` | 否 | 否 | 只读，遍历子目录的 library.json 汇总展示 |
+| 命令 | 写 library.json | 校验体积 | 联网 | 说明 |
+|------|:-:|:-:|:-:|------|
+| `download` | 是 | 否 | 是 | 下载成功后新增/更新记录，source=download |
+| `scan` | 是（覆盖） | 仅 download 源 | **否** | 纯本地扫描磁盘文件，维护 library.json |
+| `update` | 间接 | 否 | 是 | 仅 download 源，比对 library.json vs 远端 vol_ids，缺失的调 download |
+| `library` | 否 | 否 | 否 | 只读，遍历子目录的 library.json 汇总展示（含 scan 和 download 来源） |
 
-- **体积校验**：仅对 `source="download"` 的卷校验（实际大小 < 预期 80% 则跳过）；`source="scan"` 的卷不校验，直接关联
-- **source 保留**：rescan 时通过 `(vol_id, format)` 匹配旧记录，保留 `source` 字段；首次导入（link/untracked）所有卷为 `source="scan"`
+- **两种来源**：`source="download"`（通过 kmoe 下载，有线上 ID）和 `source="scan"`（本地关联，无线上信息）
+- **体积校验**：scan 时仅对 `source="download"` 的卷校验（实际大小 < 已记录 size_bytes 的 80% 则移除）；`source="scan"` 的卷只检查文件是否存在
+- **update 仅作用于 download 来源**：跳过 `book_id` 和 `comic_id` 均为空的条目
 - **update 不做磁盘检查**：只比较 vol_id 集合差集，磁盘完整性由 scan 负责
 
 ## 测试策略
