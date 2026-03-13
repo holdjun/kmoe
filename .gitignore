@@ -31,10 +31,10 @@ htmlcov/
 # ruff
 .ruff_cache/
 
-# Claude Code (track skills, ignore personal settings)
+# Claude Code (track skills and shared settings, ignore personal overrides)
 .claude/*
 !.claude/skills/
-!.claude/settings.local.json
+!.claude/settings.json
 
 # OS
 .DS_Store
