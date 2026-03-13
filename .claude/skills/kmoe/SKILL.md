@@ -1,6 +1,6 @@
 ---
 name: kmoe
-description: Use when the user wants to search, download, or manage manga/comics from kxx.moe/kzz.moe/koz.moe sites. Trigger on any mention of manga downloading, comic library management, updating manga collections, checking download quota, scanning local manga files, or the kmoe CLI tool. Even if the user just says they want to read or get a specific manga title, this skill applies.
+description: Use when searching, downloading, or managing manga from kxx.moe/kzz.moe/koz.moe, or using the kmoe CLI.
 ---
 
 # kmoe — Manga Downloader CLI

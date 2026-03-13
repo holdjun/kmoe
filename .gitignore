@@ -34,6 +34,7 @@ htmlcov/
 # Claude Code (track skills, ignore personal settings)
 .claude/*
 !.claude/skills/
+!.claude/settings.local.json
 
 # OS
 .DS_Store

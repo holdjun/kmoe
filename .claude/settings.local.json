@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty') && if echo \"$FILE\" | grep -q '\\.py$'; then result=$(uv run ruff check \"$FILE\" --no-fix 2>&1); if [ -n \"$result\" ]; then echo \"$result\" | head -20; fi; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
