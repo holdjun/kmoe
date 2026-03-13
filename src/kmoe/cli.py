@@ -183,6 +183,7 @@ async def _login(username: str, password: str) -> None:
     try:
         async with KmoeClient(config) as client:
             user_status = await login(client, username, password)
+            mirror = client.active_mirror
     except KmoeError as exc:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
         raise typer.Exit(1) from None
@@ -190,6 +191,7 @@ async def _login(username: str, password: str) -> None:
     table = Table(title="Login Successful", show_header=False)
     table.add_column("Field", style="bold")
     table.add_column("Value")
+    table.add_row("Site", f"https://{mirror}")
     _add_user_rows(table, user_status)
     console.print(table)
 
@@ -870,7 +872,10 @@ def _scan() -> None:
 
     # --- Untracked directories ---
     for dir_path, title in untracked:
-        console.print(f"[bold]{dir_path.name}[/bold] -> [cyan]{title}[/cyan]")
+        if title != dir_path.name:
+            console.print(f"[bold]{dir_path.name}[/bold] -> [cyan]{title}[/cyan]")
+        else:
+            console.print(f"[bold]{dir_path.name}[/bold]")
         entry = scan_untracked_directory(dir_path)
         console.print(f"  [green]Created: {len(entry.downloaded_volumes)} volume(s)[/green]")
 

@@ -1,6 +1,6 @@
 ---
 name: submit
-description: Complete code-to-PR workflow — self-review, commit, push, and open a pull request. Use this skill whenever the user wants to submit code, create a PR, push changes, or finalize work on a branch. Trigger on any mention of submitting, pushing, creating a pull request, or finishing a feature. All code submissions in this project MUST go through this skill, even if the user just says "push it" or "ship it".
+description: Use when submitting code, creating a PR, pushing changes, or when user says "push it" or "ship it".
 ---
 
 # Submit

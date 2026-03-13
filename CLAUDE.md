@@ -1,8 +1,4 @@
-# kmoe — Manga Downloader CLI
-
-## Overview
-
-kxx.moe / kzz.moe / koz.moe 漫画站点的命令行下载工具。登录、搜索、下载（MOBI/EPUB）、本地库管理，多镜像自动故障转移。
+# kmoe — kxx.moe / kzz.moe / koz.moe 漫画站下载 CLI
 
 ## Core Principles
 
@@ -41,7 +37,7 @@ docs/               技术文档、架构设计
 # Lint        — uv run ruff check src/
 # Format      — uv run ruff format src/
 # Type check  — uv run basedpyright src/
-# Pre-commit  — uv run ruff check src/ && uv run ruff format --check src/ && uv run pytest
+# Pre-commit  — uv run ruff check src/ && uv run ruff format --check src/ && uv run basedpyright src/ && uv run pytest
 ```
 
 ## Key Rules
@@ -54,12 +50,29 @@ docs/               技术文档、架构设计
 6. **不要创建新的抽象层或辅助函数**，除非被多处（3+）调用；优先内联简单逻辑（<5 行）
 7. **CLI 层同步，业务层 async** — 所有命令都是同步函数调用 `asyncio.run()` 包装异步实现
 
-## Skills
+## Verification
 
-项目 skills（通过 `/skill-name` 调用）：
+每次变更提交前必须全部通过：
 
-- **`/submit`** — 完整的 code-to-PR 工作流。处理分支管理、质量检查、自审、提交、推送、PR 创建和 CI 监控。**所有代码提交必须使用此 skill。**
-- **`/setup`** — 配置 GitHub 仓库设置（分支保护、合并策略）。幂等，可安全重复执行。
+```bash
+uv run ruff check src/ && uv run ruff format --check src/ && uv run basedpyright src/ && uv run pytest
+```
+
+| 任务类型 | 完成条件 |
+|---------|---------|
+| Bug 修复 | 复现测试 + 上述命令全绿 |
+| 新功能 | 对应测试文件 + 上述命令全绿 |
+| 重构 | 现有测试不变 + 上述命令全绿 |
+| 文档 | 无断链、无过时信息 |
+
+## Compact Instructions
+
+压缩时按优先级保留：
+
+1. 架构决策（不允许摘要化）
+2. 已修改文件及关键变更
+3. 当前验证状态（pass/fail）
+4. 未完成的 TODO 和回滚注意事项
 
 ## File Naming Conventions
 

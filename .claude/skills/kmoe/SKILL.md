@@ -1,6 +1,6 @@
 ---
 name: kmoe
-description: Use when the user wants to search, download, or manage manga/comics from kxx.moe/kzz.moe/koz.moe sites. Trigger on any mention of manga downloading, comic library management, updating manga collections, checking download quota, scanning local manga files, or the kmoe CLI tool. Even if the user just says they want to read or get a specific manga title, this skill applies.
+description: Use when searching, downloading, or managing manga from kxx.moe/kzz.moe/koz.moe, or using the kmoe CLI.
 ---
 
 # kmoe — Manga Downloader CLI
@@ -29,7 +29,7 @@ pip install kmoe
 kmoe status
 ```
 
-If not logged in or session expired, tell the user to run `kmoe login -u <email>` themselves — **login is interactive** (prompts for password, download directory, format preference, language, worker count). Do not attempt to automate login.
+If not logged in or session expired, tell the user to run `kmoe login -u <email>` themselves — **login is interactive** (prompts for password, download directory, format preference, language, worker count). Do not attempt to automate login. The website is **https://kxx.moe** (mirrors: kzz.moe, koz.moe) — tell the user this is where they register an account if they don't have one.
 
 ## Commands Reference
 
@@ -60,6 +60,8 @@ kmoe download <comic_id> -f epub                 # Override format (epub/mobi)
 ```
 
 Files go to `{download_dir}/{title}_{book_id}/`. Shows progress bars, transfer speed, and quota before starting. Already-downloaded volumes are skipped automatically.
+
+**Before downloading, run `kmoe status` to check the user's remaining quota.** If quota looks tight for the requested download, warn the user before proceeding.
 
 ### library — List tracked comics
 
