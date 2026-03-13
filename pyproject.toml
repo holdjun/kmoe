@@ -68,17 +68,18 @@ select = [
     "W",
     "F",
     "I",
+    "N",
     "B",
     "C4",
     "UP",
     "ARG",
     "SIM",
-    "TCH",
+    "TC",
     "PTH",
     "ERA",
     "RUF",
 ]
-ignore = ["E501", "RUF001", "TC001"]
+ignore = ["E501", "RUF001", "TC001", "TC003"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["kmoe"]
@@ -86,7 +87,6 @@ known-first-party = ["kmoe"]
 [tool.basedpyright]
 pythonVersion = "3.10"
 typeCheckingMode = "standard"
-reportMissingImports = true
 reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
