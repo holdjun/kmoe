@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/holdjun/kmoe/compare/v0.2.1...v0.3.0) (2026-03-31)
+
+
+### Features
+
+* enforce login for online commands ([#36](https://github.com/holdjun/kmoe/issues/36)) ([7e62d77](https://github.com/holdjun/kmoe/commit/7e62d77352a90f20c7454ce1ea90c77c1efdc252))
+* replace kmoe skill with broader manga-kmoe skill ([#35](https://github.com/holdjun/kmoe/issues/35)) ([f45d3c3](https://github.com/holdjun/kmoe/commit/f45d3c35743c7bd1b2e9b7a782601b52f25fa163))
+
+
+### Bug Fixes
+
+* improve scan/login output, standardize on uv, and health audit fixes ([#21](https://github.com/holdjun/kmoe/issues/21)) ([3bb03df](https://github.com/holdjun/kmoe/commit/3bb03df84be341f66ab3fbae7a703b8ac4a46e44))
+
 ## [0.2.1](https://github.com/holdjun/kmoe/compare/v0.2.0...v0.2.1) (2026-03-12)
 
 
