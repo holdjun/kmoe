@@ -226,7 +226,7 @@ def test_update_empty_library(
 @patch("kmoe.cli.list_library")
 @patch("kmoe.cli.get_or_create_config", return_value=_config())
 @patch("kmoe.cli.KmoeClient")
-@patch("kmoe.cli._apply_session")
+@patch("kmoe.cli.ensure_logged_in", new_callable=AsyncMock)
 def test_update_dry_run_shows_missing(
     _mock_session: object,
     mock_client_cls: AsyncMock,
@@ -256,7 +256,7 @@ def test_update_dry_run_shows_missing(
 @patch("kmoe.cli.list_library")
 @patch("kmoe.cli.get_or_create_config", return_value=_config())
 @patch("kmoe.cli.KmoeClient")
-@patch("kmoe.cli._apply_session")
+@patch("kmoe.cli.ensure_logged_in", new_callable=AsyncMock)
 def test_update_all_up_to_date(
     _mock_session: object,
     mock_client_cls: AsyncMock,

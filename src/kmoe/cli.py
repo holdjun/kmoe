@@ -16,7 +16,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from kmoe.auth import check_session, load_session, login
+from kmoe.auth import check_session, ensure_logged_in, login
 from kmoe.client import KmoeClient
 from kmoe.comic import get_comic_detail
 from kmoe.config import get_or_create_config, save_config
@@ -81,13 +81,6 @@ def _main(
 def _run(coro: object) -> object:
     """Run an async coroutine synchronously."""
     return asyncio.run(coro)  # type: ignore[arg-type]
-
-
-def _apply_session(client: KmoeClient) -> None:
-    """Load saved session cookies and apply them to the client."""
-    cookies = load_session()
-    if cookies:
-        client.set_cookies(cookies)
 
 
 def _add_user_rows(table: Table, user: UserStatus) -> None:
@@ -301,7 +294,7 @@ async def _search(keyword: str, page: int, language: str | None) -> None:
     lang_filter = language or config.preferred_language
     try:
         async with KmoeClient(config) as client:
-            _apply_session(client)
+            await ensure_logged_in(client)
             response = await search(client, keyword, page=page, language=lang_filter)
     except KmoeError as exc:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
@@ -357,7 +350,7 @@ async def _info(comic_id: str) -> None:
     config = get_or_create_config()
     try:
         async with KmoeClient(config) as client:
-            _apply_session(client)
+            await ensure_logged_in(client)
             detail = await get_comic_detail(client, comic_id)
     except KmoeError as exc:
         console.print(Panel(f"[red]{exc.message}[/red]", title="Error"))
@@ -572,7 +565,7 @@ async def _download(comic_id: str, volumes_str: str | None, fmt_str: str | None)
 
     try:
         async with KmoeClient(config) as client:
-            _apply_session(client)
+            user = await ensure_logged_in(client)
             detail = await get_comic_detail(client, comic_id)
 
             if volumes_str:
@@ -585,12 +578,11 @@ async def _download(comic_id: str, volumes_str: str | None, fmt_str: str | None)
                 return
 
             # Show remaining quota before download
-            user = await check_session(client)
-            if user is not None:
-                remaining = user.quota_remaining + user.quota_extra
+            remaining = user.quota_remaining + user.quota_extra
+            if user.quota_free_month > 0:
                 console.print(f"Quota: {remaining:.1f} / {user.quota_free_month:.1f} MB remaining")
-                if remaining <= 0:
-                    console.print("[yellow]Warning: quota may be exhausted[/yellow]")
+            if remaining <= 0:
+                console.print("[yellow]Warning: quota may be exhausted[/yellow]")
 
             console.print(
                 f"Downloading {len(vol_ids)} volume(s) of "
@@ -713,7 +705,7 @@ async def _update(
 
     try:
         async with KmoeClient(config) as client:
-            _apply_session(client)
+            await ensure_logged_in(client)
 
             # Phase 1: check each entry for new volumes
             updates: list[tuple[LibraryEntry, ComicDetail, list[str]]] = []
